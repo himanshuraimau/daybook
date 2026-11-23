@@ -65,6 +65,7 @@ The owner is paid on a fixed day (for example the 27th) and wants a spending cap
 - **Payday:** a day of the month, 1–31. A cycle starts on the payday and ends the day before the next one (27 Nov – 26 Dec). When a month is shorter than the payday, the cycle starts on that month's last day. Until a payday is set, it is 1, so a cycle is a calendar month.
 - **Fixed spends:** up to 30 named monthly commitments (name, amount, category), such as rent ₹10,000. They are *reserved* at the start of each cycle and are **not** entered as daily expenses, so they are never counted twice.
 - **Spendable** = salary − total fixed spends. **Left to spend** = spendable − expenses logged in the current cycle, including pending ones. **Daily allowance** = left ÷ days remaining in the cycle including today, rounded down to whole paise. A negative result is shown as "Over by ₹…", never hidden.
+- **EMIs (added 2026-11-23):** a fixed spend can be an EMI: it has a monthly instalment, a number of months (1–120), and the cycle its first instalment falls in. It is set aside automatically in each cycle from that start until the last instalment, then stops, so it is never entered as an expense. The owner can enter the total cost or the instalment (the other is calculated), choose "this cycle" or "next cycle" as the start, or say how many instalments are already paid. The list shows "EMI · 3 of 12" and the total. Spendable for a cycle is salary minus the fixed spends and EMI instalments that fall in that cycle, so spendable rises when an EMI ends. EMIs can also be started from Add expense ("Paying in instalments?"); doing that sets up the EMI instead of saving a one-off expense, because an instalment is already reserved.
 - Without a budget, Home still shows today's and the cycle's totals and offers a card to set the salary. Nothing else is blocked.
 - The profile belongs to one account. It is saved on the phone first and uploaded as a single document (last write wins by its `updatedAt` time); it can be edited offline.
 
@@ -220,6 +221,14 @@ These numbered components map to the sessions in [sessions.md](sessions.md). A c
 - [x] Show left-to-spend and daily allowance on Home, switch History to cycles, and add the Insights tab and streak.
 
 **Done when:** entering salary, payday, and rent changes Home and Insights correctly, including after an offline edit and restart. *(Checked on the emulator and in JVM tests; the production budget upload is still to be verified after the server is deployed.)*
+
+### P12 — Appearance and EMIs
+
+- [x] Add a System / Light / Dark choice in Settings, remembered on the phone and applied immediately.
+- [x] Add EMIs to the budget (instalment, months, start cycle, already paid), carry them through the budget API and sync, and set them aside automatically each cycle until they end.
+- [x] Offer "Paying in instalments?" on Add expense and show EMI progress in the budget list.
+
+**Done when:** a light/dark choice survives restart; an EMI reduces what is left in each of its cycles and stops afterwards; and the EMI reaches the server with the rest of the budget.
 
 ## 7. After the first release
 

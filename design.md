@@ -95,7 +95,7 @@ A floating **Add expense** 3D button stays above the navigation bar. Empty state
 
 ### 4.3 Add / edit expense
 
-Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, three to a row, Food preselected; Entertainment reads "Fun" on the chip). The amount and chips scroll; the date chips (**Today** / **Yesterday** / **Pick date**), the optional note field (240 characters) and the number pad stay fixed above the Save button so a whole entry is reachable without scrolling. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
+Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, three to a row, Food preselected; Entertainment reads "Fun" on the chip). The amount and chips scroll; the date chips (**Today** / **Yesterday** / **Pick date**), the optional note field (240 characters) and the number pad stay fixed above the Save button so a whole entry is reachable without scrolling. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Under the category chips a text link, **Paying in instalments? Set up an EMI**, opens the EMI dialog prefilled with the note, category and typed amount (as the instalment); saving it adds the EMI to the budget instead of saving a one-off expense. Without a budget the link asks for a salary first. It is hidden when editing an existing expense. Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
 
 ### 4.4 History
 
@@ -119,7 +119,9 @@ Reached from the Home nudge, first login (skippable with **Set up later**) and S
 
 1. **Salary** — ₹ amount per month.
 2. **Payday** — stepper (− / +) and a label "Paid on the 27th". Helper text: "Your cycle runs from the 27th to the 26th."
-3. **Fixed spends** — list rows (name, category, amount, delete) and a 3D **Add fixed spend** button opening a dialog with name, amount, category chips. Footer line: "Fixed total ₹10,000 · Spendable ₹40,000" updating live; in `bad` if fixed exceeds salary.
+3. **Fixed spends and EMIs** — list rows (category icon, name, a second line, amount, delete) and two 3D buttons, **Add fixed spend** and **Add EMI**. An EMI row's second line says where it stands: "EMI · 3 of 12 · total ₹60,000", "EMI · starts next cycle" or "EMI · finished". Footer line: "Fixed ₹15,000 · Spendable ₹35,000" for the current cycle, updating live; in `bad` if fixed exceeds salary.
+
+**EMI dialog.** A scrolling dialog with permanent labels above each field (Name, Monthly instalment, Number of months, Total cost optional), a live line "₹5,000 × 12 months = ₹60,000", a **First instalment** choice (This cycle / Next cycle), "Instalments already paid" (only for This cycle), category chips, and Cancel / Add pinned at the bottom. Entering the total works out the instalment (rounded to the nearest paisa); entering the instalment works out the total. A note explains that the EMI is set aside automatically and is not added as an expense.
 
 A full-width **Save budget** button. Edits made offline are saved on the phone and uploaded later; Settings shows "Budget saved on this phone, waiting to sync" until then.
 

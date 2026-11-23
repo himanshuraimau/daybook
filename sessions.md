@@ -22,6 +22,7 @@ This checklist turns the components in [plan.md](plan.md#6-delivery-plan) into w
 | 9 | P9 — Budget API and cycle logic | Complete |
 | 10 | P10 — Streak redesign | Complete |
 | 11 | P11 — Budget, fixed spends, Insights | Complete, one check open |
+| 12 | P12 — Appearance and EMIs | Complete, one check open |
 
 ## Session 1 — Product decisions and screen sketches (P1)
 
@@ -163,3 +164,14 @@ This checklist turns the components in [plan.md](plan.md#6-delivery-plan) into w
 - [x] **Session complete:** salary, payday, and rent change Home and Insights correctly, including after an offline edit and restart.
 
 **Evidence / notes (2026-11-23):** On the emulator: Settings → Budget, salary ₹50,000, payday 27th and a ₹10,000 Rent fixed spend saved; the budget survived an app restart; Home then showed "Left to spend · 27 Oct – 26 Nov" with ₹39,749.50 left and ₹9,937.37 a day for 4 days (₹40,000 − ₹250.50, ÷ 4, rounded down), later ₹33,579 after more entries, matching my hand calculation. History switched to cycles; Insights showed Spent ₹6,421 / Fixed ₹10,000 / Left ₹33,579, the daily bars with the budget line (₹1,290.32 a day), pace ("₹32,891.04 under budget"), category ranking and the four numbers. 14 UI tests cover budget setup and validation, fixed spends (add, validate, remove), over-budget wording, cycle History, Insights with and without a budget, and the streak. Open: uploading the budget to the production API (see Session 9) and the physical-phone checks listed under Session 10.
+
+## Session 12 — Appearance and EMIs (P12)
+
+**Goal:** let the owner pick light or dark, and enter EMIs once instead of every month.
+
+- [x] System / Light / Dark choice in Settings.
+- [x] EMIs: instalment, months, total cost, start cycle, already paid; set aside automatically until the last instalment.
+- [x] "Paying in instalments?" on Add expense; EMI progress in the budget list.
+- [x] **Session complete:** the choice survives restart; an EMI reduces what is left in its cycles and stops afterwards; the EMI is part of the budget sent to the server.
+
+**Evidence / notes (2026-11-23):** Appearance: stored on the phone and applied by wrapping the activity context, so it works on API 26+. On the emulator with the phone itself in dark mode, Light overrode it, Dark and System followed, and the app stayed on Settings after each switch; 5 tests cover persistence, forced night mode, fallback and the control. EMIs: `FixedSpend` gained optional `months` and `startKey` (the start month of the first cycle); an EMI is charged in `months` consecutive cycles, so spendable is now worked out per cycle (`fixedFor`/`spendableFor`) and rises when an EMI ends. 6 more domain tests cover payday 27, calendar months, payday 31, a start next cycle, partly paid EMIs, finished EMIs and Insights using the cycle's own figures. Server: `months` (1–120) and `startKey` are validated together and returned; `bun test` passed 8 tests / 142 assertions. UI: 12 tests cover the dialog calculator (total ↔ instalment ↔ months, rounding), the start options, validation, finished EMIs, and the Add expense link (no budget → set one up; with a budget → the EMI replaces the one-off expense). On the emulator the dialog showed ₹5,000 × 12 months = ₹60,000, the budget list read "EMI · 1 of 12 · total ₹60,000", and Home showed ₹28,579 left (₹50,000 − ₹10,000 − ₹5,000 − ₹6,421). `testDebugUnitTest assembleDebug lintDebug assembleRelease` passed (82 tests). Open: the EMI reaches the production API only after the server is deployed (the live server still has no `/api/budget`), and the physical-phone checks from Session 10.
