@@ -16,7 +16,7 @@ interface ExpenseGateway {
     fun listMonth(session: AccountSession, month: String): List<LocalExpense>
 }
 
-class ApiClient : ExpenseGateway {
+class ApiClient : ExpenseGateway, BudgetGateway {
     private val origin = BuildConfig.API_BASE_URL.trimEnd('/')
     override val configured: Boolean get() = origin.startsWith("https://")
 
@@ -52,6 +52,10 @@ class ApiClient : ExpenseGateway {
         session(call("/api/auth/login", "POST", body = JSONObject().put("email", email).put("password", password)))
     fun signup(email: String, password: String): AccountSession =
         session(call("/api/auth/signup", "POST", body = JSONObject().put("email", email).put("password", password)))
+    override fun getBudget(session: AccountSession): com.daybook.mobile.domain.BudgetProfile? =
+        call("/api/budget", session = session).optJSONObject("budget")?.let { BudgetStore.decode(it) }
+    override fun putBudget(session: AccountSession, profile: com.daybook.mobile.domain.BudgetProfile): com.daybook.mobile.domain.BudgetProfile =
+        BudgetStore.decode(call("/api/budget", "PUT", session, JSONObject(BudgetStore.encode(profile))).getJSONObject("budget"))
     fun me(session: AccountSession): Boolean = try { call("/api/auth/me", session = session); true } catch (error: ApiError) { if (error.status == 401) false else throw error }
     fun logout(session: AccountSession) { call("/api/auth/logout", "POST", session) }
     override fun create(session: AccountSession, expense: LocalExpense): LocalExpense {

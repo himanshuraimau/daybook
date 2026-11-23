@@ -17,10 +17,15 @@ object ExpenseSync {
         scheduler.schedule(JobInfo.Builder(JOB_ID, ComponentName(context, SyncJobService::class.java))
             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPersisted(true).setBackoffCriteria(30_000, JobInfo.BACKOFF_POLICY_EXPONENTIAL).build())
     }
-    fun run(context: Context, month: YearMonth = YearMonth.now()): Boolean {
+    fun run(context: Context, month: YearMonth = YearMonth.now()): Boolean = run(context, listOf(month))
+    /** Uploads pending work, then refreshes each of [months] and syncs the budget profile. Returns true to retry later. */
+    fun run(context: Context, months: List<YearMonth>): Boolean {
         val session = SessionVault(context).get() ?: return false
         val api = ApiClient()
-        return runForAccount(context, month, session, api)
+        var retry = false
+        for (month in months.distinct()) retry = runForAccount(context, month, session, api) || retry
+        val budgets = BudgetStore(context)
+        return BudgetSync.run(budgets, session, api) || retry
     }
     @Synchronized internal fun runForAccount(context: Context, month: YearMonth, session: AccountSession, api: ExpenseGateway): Boolean {
         if (!api.configured) return false
