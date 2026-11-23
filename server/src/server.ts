@@ -64,7 +64,8 @@ function expenseDto(expense: { id: string; clientId: string; amountMinor: number
     createdAt: expense.createdAt, updatedAt: expense.updatedAt };
 }
 const MAX_FIXED = 30;
-function budgetFields(body: Dict | null): { incomeMinor: number; payday: number; fixed: { id: string; name: string; amountMinor: number; category: string }[]; updatedAt: number } | null {
+type FixedItem = { id: string; name: string; amountMinor: number; category: string; months?: number | null; startKey?: string | null };
+function budgetFields(body: Dict | null): { incomeMinor: number; payday: number; fixed: FixedItem[]; updatedAt: number } | null {
   if (!body) return null;
   const { incomeMinor, payday, fixed, updatedAt } = body;
   if (typeof incomeMinor !== "number" || !Number.isSafeInteger(incomeMinor) || incomeMinor < 1 || incomeMinor > 100_000_000_000) return null;
@@ -81,16 +82,21 @@ function budgetFields(body: Dict | null): { incomeMinor: number; payday: number;
     if (name.length < 1 || name.length > 40) return null;
     if (typeof item.amountMinor !== "number" || !Number.isSafeInteger(item.amountMinor) || item.amountMinor < 1 || item.amountMinor > 100_000_000_000) return null;
     if (!CATEGORIES.includes(item.category as typeof CATEGORIES[number])) return null;
+    const hasMonths = item.months !== undefined && item.months !== null, hasStart = item.startKey !== undefined && item.startKey !== null;
+    if (hasMonths !== hasStart) return null;
+    if (hasMonths && (typeof item.months !== "number" || !Number.isInteger(item.months) || item.months < 1 || item.months > 120)) return null;
+    if (hasStart && (typeof item.startKey !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(item.startKey))) return null;
     ids.add(item.id);
-    items.push({ id: item.id, name, amountMinor: item.amountMinor, category: item.category as string });
+    items.push({ id: item.id, name, amountMinor: item.amountMinor, category: item.category as string, ...(hasMonths ? { months: item.months as number, startKey: item.startKey as string } : {}) });
   }
   const total = items.reduce((sum, item) => sum + item.amountMinor, 0);
   if (!Number.isSafeInteger(total)) return null;
   return { incomeMinor, payday, fixed: items, updatedAt };
 }
-function budgetDto(budget: { incomeMinor: number; payday: number; fixed: { id: string; name: string; amountMinor: number; category: string }[]; updatedAt: number }): Dict {
+function budgetDto(budget: { incomeMinor: number; payday: number; fixed: FixedItem[]; updatedAt: number }): Dict {
   return { incomeMinor: budget.incomeMinor, payday: budget.payday, updatedAt: budget.updatedAt,
-    fixed: budget.fixed.map(item => ({ id: item.id, name: item.name, amountMinor: item.amountMinor, category: item.category })) };
+    fixed: budget.fixed.map(item => ({ id: item.id, name: item.name, amountMinor: item.amountMinor, category: item.category,
+      ...(item.months != null && item.startKey ? { months: item.months, startKey: item.startKey } : {}) })) };
 }
 async function ownerOf(req: Request): Promise<string | null> {
   const match = /^Bearer ([A-Za-z0-9_-]{40,})$/.exec(req.headers.get("authorization") ?? "");

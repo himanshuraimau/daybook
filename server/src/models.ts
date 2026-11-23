@@ -47,6 +47,8 @@ const budgetSchema = new Schema({
     name: { type: String, required: true, minlength: 1, maxlength: 40 },
     amountMinor: { type: Number, required: true, min: 1, max: 100_000_000_000 },
     category: { type: String, enum: CATEGORIES, required: true },
+    months: { type: Number, min: 1, max: 120 },
+    startKey: { type: String, match: /^\d{4}-(0[1-9]|1[0-2])$/ },
   }, { _id: false })],
   updatedAt: { type: Number, required: true },
 });

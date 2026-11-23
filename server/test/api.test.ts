@@ -159,3 +159,18 @@ test.skipIf(!uri)("budget profile: validation, account scope, last write wins, n
   expect((await request("/api/budget", "GET", first)).body.budget).toEqual(newer);
   expect(await Budget.countDocuments({ ownerId: a })).toBe(1);
 });
+
+test.skipIf(!uri)("budget EMIs: months and start cycle are validated, stored and returned", async () => {
+  const token = await login("a@example.test", "a very long password");
+  const base = Date.now() + 10_000;
+  const emi = { id: "phone", name: "Phone EMI", amountMinor: 500_000, category: "Shopping", months: 12, startKey: "2026-11" };
+  const body = { incomeMinor: 5_000_000, payday: 27, fixed: [{ id: "rent", name: "Rent", amountMinor: 1_000_000, category: "Bills" }, emi], updatedAt: base };
+  for (const bad of [
+    { ...emi, months: 0 }, { ...emi, months: 121 }, { ...emi, months: 2.5 }, { ...emi, startKey: "2026-13" }, { ...emi, startKey: "Nov 2026" },
+    { ...emi, startKey: undefined }, { ...emi, months: undefined },
+  ]) expect((await request("/api/budget", "PUT", token, { ...body, updatedAt: base + 1, fixed: [bad] })).status).toBe(400);
+  const saved = await request("/api/budget", "PUT", token, body);
+  expect(saved.status).toBe(200);
+  expect(saved.body.budget.fixed).toEqual(body.fixed);          // plain fixed spend has no EMI fields, the EMI keeps both
+  expect((await request("/api/budget", "GET", token)).body.budget.fixed[1]).toEqual(emi);
+});
