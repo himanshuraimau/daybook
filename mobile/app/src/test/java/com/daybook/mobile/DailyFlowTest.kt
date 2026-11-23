@@ -232,7 +232,7 @@ class DailyFlowTest {
             val dialog = ShadowAlertDialog.getLatestAlertDialog()
             dialog.findViewById<EditText>(R.id.fixed_name_input).setText(name)
             dialog.findViewById<EditText>(R.id.fixed_amount_input).setText(amount)
-            dialog.findViewById<View>(R.id.fixed_confirm).performClick()
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         }
         a.findViewById<View>(R.id.budget_save).performClick()
     }
@@ -248,7 +248,7 @@ class DailyFlowTest {
         val dialog = ShadowAlertDialog.getLatestAlertDialog()
         dialog.findViewById<EditText>(R.id.fixed_name_input).setText("Rent")
         dialog.findViewById<EditText>(R.id.fixed_amount_input).setText("10000")
-        dialog.findViewById<View>(R.id.fixed_confirm).performClick()
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         assertEquals("Fixed ₹10,000 · Spendable ₹40,000", text(a, R.id.fixed_totals))
         a.findViewById<View>(R.id.budget_save).performClick()                               // returns to Settings
         assertTrue(text(a, R.id.settings_budget_title).contains("Salary ₹50,000 · paid on the 27th"))
@@ -290,13 +290,13 @@ class DailyFlowTest {
         a.findViewById<View>(R.id.nudge_button).performClick()
         a.findViewById<View>(R.id.fixed_add).performClick()
         val d = ShadowAlertDialog.getLatestAlertDialog()
-        d.findViewById<View>(R.id.fixed_confirm).performClick()
+        d.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         assertTrue(d.findViewById<TextView>(R.id.fixed_error).text.contains("name"))
         d.findViewById<EditText>(R.id.fixed_name_input).setText("Rent")
-        d.findViewById<View>(R.id.fixed_confirm).performClick()
+        d.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         assertTrue(d.findViewById<TextView>(R.id.fixed_error).text.contains("amount"))
         d.findViewById<EditText>(R.id.fixed_amount_input).setText("12000.50")
-        d.findViewById<View>(R.id.fixed_confirm).performClick()
+        d.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
         assertEquals(1, a.findViewById<LinearLayout>(R.id.fixed_list).childCount)
         assertTrue(allText(a.findViewById(R.id.fixed_list)).contains("₹12,000.50"))
         a.findViewById<View>(R.id.fixed_list).let { (it as LinearLayout).getChildAt(0).findViewById<View>(R.id.fixed_delete).performClick() }

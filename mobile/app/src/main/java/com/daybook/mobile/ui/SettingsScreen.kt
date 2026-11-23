@@ -28,7 +28,8 @@ class SettingsScreen(private val h: Host) {
         if (profile == null) { title.text = "Set up your budget"; sub.text = "Salary, payday and fixed spends" }
         else {
             title.text = "Salary ${Fmt.money(profile.incomeMinor)} · paid on the ${Fmt.ordinal(profile.payday)}"
-            sub.text = "Fixed ${Fmt.money(profile.fixedMinor)} · Spendable ${Fmt.money(profile.spendableMinor)}" + if (h.budgets.dirty(owner)) "\nSaved on this phone, waiting to sync" else ""
+            val cycleNow = com.daybook.mobile.domain.Cycles.containing(h.today(), profile.payday)
+            sub.text = "Fixed ${Fmt.money(profile.fixedFor(cycleNow))} · Spendable ${Fmt.money(profile.spendableFor(cycleNow))}" + if (h.budgets.dirty(owner)) "\nSaved on this phone, waiting to sync" else ""
         }
         v.findViewById<android.view.View>(R.id.settings_budget_card).setOnClickListener { h.showBudget(false) }
 

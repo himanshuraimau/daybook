@@ -116,6 +116,18 @@ class EntryScreen(private val h: Host) {
             }
         }
 
+        val emiLink = v.findViewById<View>(R.id.entry_emi_link)
+        emiLink.visibility = if (existing == null) View.VISIBLE else View.GONE
+        emiLink.setOnClickListener {
+            val profile = h.budgets.get(owner)
+            if (profile == null) { h.message("Set your salary first, then add the EMI."); h.showBudget(false); return@setOnClickListener }
+            FixedDialog(h).show(true, profile.payday, FixedDialog.Prefill(note.text.toString().trim(), chosenCategory, Fmt.parsePaise(digits.toString()))) { emi ->
+                h.budgets.save(owner, profile.incomeMinor, profile.payday, profile.fixed + emi)
+                ExpenseSync.schedule(ctx)
+                h.message("EMI added. It is set aside every cycle, so you don't need to log it.")
+                h.refreshFromServer(); h.showHome()
+            }
+        }
         v.findViewById<View>(R.id.entry_back).setOnClickListener { h.returnFromEntry() }
         val save = v.findViewById<TextView>(R.id.entry_save)
         save.setOnClickListener {

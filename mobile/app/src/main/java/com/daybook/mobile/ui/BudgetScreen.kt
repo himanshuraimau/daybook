@@ -1,10 +1,8 @@
 package com.daybook.mobile.ui
 
-import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
-import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -13,7 +11,6 @@ import com.daybook.mobile.data.ExpenseSync
 import com.daybook.mobile.domain.Cycles
 import com.daybook.mobile.domain.FixedSpend
 import java.math.BigDecimal
-import java.util.UUID
 
 class BudgetScreen(private val h: Host) {
     fun show(onboarding: Boolean, onDone: () -> Unit) {
@@ -35,7 +32,8 @@ class BudgetScreen(private val h: Host) {
         val list = v.findViewById<LinearLayout>(R.id.fixed_list)
         fun refreshTotals() {
             val salary = Fmt.parsePaise(income.text.toString()) ?: 0L
-            val sum = fixed.sumOf { it.amountMinor }
+            val cycleNow = Cycles.containing(h.today(), payday)
+            val sum = fixed.filter { it.chargedIn(cycleNow) }.sumOf { it.amountMinor }
             if (salary > 0 && sum > salary) { totals.text = "Fixed ${Fmt.money(sum)} is more than your salary"; totals.setTextColor(ctx.getColor(R.color.bad)) }
             else {
                 totals.text = if (salary > 0) "Fixed ${Fmt.money(sum)} · Spendable ${Fmt.money(salary - sum)}" else "Fixed ${Fmt.money(sum)}"
@@ -50,7 +48,7 @@ class BudgetScreen(private val h: Host) {
                 row.findViewById<View>(R.id.fixed_icon_bg).background.mutate().setTint(Draw.blend(color, ctx.getColor(R.color.surface), 0.2f))
                 row.findViewById<ImageView>(R.id.fixed_icon).apply { setImageResource(meta.icon); imageTintList = Draw.tint(color) }
                 row.findViewById<TextView>(R.id.fixed_name).text = f.name
-                row.findViewById<TextView>(R.id.fixed_cat).text = f.category
+                row.findViewById<TextView>(R.id.fixed_cat).text = EmiText.status(f, Cycles.containing(h.today(), payday), payday)
                 row.findViewById<TextView>(R.id.fixed_amount).text = Fmt.money(f.amountMinor)
                 row.findViewById<View>(R.id.fixed_delete).apply { contentDescription = "Remove ${f.name}"; setOnClickListener { fixed.remove(f); refreshList() } }
                 list.addView(row)
@@ -72,13 +70,15 @@ class BudgetScreen(private val h: Host) {
                 if (payday > 28) " In shorter months it starts on the last day." else ""
         }
         refreshPayday()
-        v.findViewById<View>(R.id.payday_minus).setOnClickListener { payday = if (payday == 1) 31 else payday - 1; refreshPayday() }
-        v.findViewById<View>(R.id.payday_plus).setOnClickListener { payday = if (payday == 31) 1 else payday + 1; refreshPayday() }
+        v.findViewById<View>(R.id.payday_minus).setOnClickListener { payday = if (payday == 1) 31 else payday - 1; refreshPayday(); refreshList() }
+        v.findViewById<View>(R.id.payday_plus).setOnClickListener { payday = if (payday == 31) 1 else payday + 1; refreshPayday(); refreshList() }
 
-        v.findViewById<View>(R.id.fixed_add).setOnClickListener {
-            if (fixed.size >= 30) { error.text = "You can add up to 30 fixed spends."; return@setOnClickListener }
-            addDialog { fixed.add(it); refreshList() }
+        fun open(emi: Boolean) {
+            if (fixed.size >= 30) { error.text = "You can add up to 30 fixed spends and EMIs."; return }
+            FixedDialog(h).show(emi, payday) { fixed.add(it); refreshList() }
         }
+        v.findViewById<View>(R.id.fixed_add).setOnClickListener { open(false) }
+        v.findViewById<View>(R.id.emi_add).setOnClickListener { open(true) }
         v.findViewById<View>(R.id.budget_save).setOnClickListener {
             val salary = Fmt.parsePaise(income.text.toString())
             if (salary == null) { error.text = "Enter your monthly salary above ₹0"; return@setOnClickListener }
@@ -89,43 +89,19 @@ class BudgetScreen(private val h: Host) {
             onDone()
         }
     }
+}
 
-    private fun addDialog(onAdd: (FixedSpend) -> Unit) {
-        val ctx = h.context
-        val view = LayoutInflater.from(ctx).inflate(R.layout.dialog_fixed, null)
-        val dialog = AlertDialog.Builder(ctx, R.style.DaybookDialog).setView(view).create()
-        val name = view.findViewById<EditText>(R.id.fixed_name_input)
-        val amount = view.findViewById<EditText>(R.id.fixed_amount_input)
-        val error = view.findViewById<TextView>(R.id.fixed_error)
-        var category = "Bills"
-        val grid = view.findViewById<GridLayout>(R.id.fixed_categories)
-        val chips = HashMap<String, TextView>()
-        fun style() {
-            for ((n, chip) in chips) {
-                val color = ctx.getColor(Categories.of(n).colorRes)
-                if (n == category) chip.background = Draw.threeD(ctx, Draw.blend(color, ctx.getColor(R.color.surface), 0.25f), color, 14) else chip.setBackgroundResource(R.drawable.chip_3d)
-                chip.isSelected = n == category
-            }
+object EmiText {
+    /** The line shown under a fixed spend: its category, or for an EMI where it stands in this cycle. */
+    fun status(f: com.daybook.mobile.domain.FixedSpend, cycle: com.daybook.mobile.domain.Cycle, payday: Int): String {
+        if (!f.isEmi) return f.category
+        val months = f.months!!
+        val word = if (payday == 1) "month" else "cycle"
+        val i = f.instalmentIn(cycle)
+        return when {
+            i < 1 -> "EMI · starts " + (if (i == 0) "next $word" else "in ${1 - i} ${word}s") + " · ${months} × ${Fmt.money(f.amountMinor)}"
+            i > months -> "EMI · finished"
+            else -> "EMI · $i of $months · total ${Fmt.money(f.totalMinor)}"
         }
-        for (meta in Categories.all) {
-            val chip = LayoutInflater.from(ctx).inflate(R.layout.item_chip, grid, false) as TextView
-            chip.text = meta.name
-            chip.setCompoundDrawablesRelativeWithIntrinsicBounds(meta.icon, 0, 0, 0)
-            chip.compoundDrawableTintList = Draw.tint(ctx.getColor(meta.colorRes))
-            chip.setOnClickListener { category = meta.name; style() }
-            chips[meta.name] = chip; grid.addView(chip)
-        }
-        style()
-        view.findViewById<View>(R.id.fixed_cancel).setOnClickListener { dialog.dismiss() }
-        view.findViewById<View>(R.id.fixed_confirm).setOnClickListener {
-            val label = name.text.toString().trim()
-            val paise = Fmt.parsePaise(amount.text.toString())
-            when {
-                label.isEmpty() -> error.text = "Give it a name, for example Rent."
-                paise == null -> error.text = "Enter an amount above ₹0."
-                else -> { onAdd(FixedSpend(UUID.randomUUID().toString(), label.take(40), paise, category)); dialog.dismiss() }
-            }
-        }
-        dialog.show()
     }
 }
