@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import mongoose from "mongoose";
 import type { Config } from "./config";
-import { Account, CATEGORIES, Expense, RateLimit, Session } from "./models";
+import { Account, Budget, CATEGORIES, Expense, RateLimit, Session } from "./models";
 
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_BODY = 16_384;
@@ -62,6 +62,35 @@ function expenseDto(expense: { id: string; clientId: string; amountMinor: number
   return { id: expense.id, clientId: expense.clientId, amountMinor: expense.amountMinor, currency: expense.currency,
     category: expense.category, occurredOn: expense.occurredOn, note: expense.note, version: expense.version,
     createdAt: expense.createdAt, updatedAt: expense.updatedAt };
+}
+const MAX_FIXED = 30;
+function budgetFields(body: Dict | null): { incomeMinor: number; payday: number; fixed: { id: string; name: string; amountMinor: number; category: string }[]; updatedAt: number } | null {
+  if (!body) return null;
+  const { incomeMinor, payday, fixed, updatedAt } = body;
+  if (typeof incomeMinor !== "number" || !Number.isSafeInteger(incomeMinor) || incomeMinor < 1 || incomeMinor > 100_000_000_000) return null;
+  if (typeof payday !== "number" || !Number.isInteger(payday) || payday < 1 || payday > 31) return null;
+  if (typeof updatedAt !== "number" || !Number.isSafeInteger(updatedAt) || updatedAt < 1 || updatedAt > Date.now() + 24 * 60 * 60_000) return null;
+  if (!Array.isArray(fixed) || fixed.length > MAX_FIXED) return null;
+  const ids = new Set<string>();
+  const items = [];
+  for (const raw of fixed) {
+    if (!raw || typeof raw !== "object") return null;
+    const item = raw as Dict;
+    const name = typeof item.name === "string" ? item.name.trim() : "";
+    if (typeof item.id !== "string" || item.id.length < 1 || item.id.length > 64 || ids.has(item.id)) return null;
+    if (name.length < 1 || name.length > 40) return null;
+    if (typeof item.amountMinor !== "number" || !Number.isSafeInteger(item.amountMinor) || item.amountMinor < 1 || item.amountMinor > 100_000_000_000) return null;
+    if (!CATEGORIES.includes(item.category as typeof CATEGORIES[number])) return null;
+    ids.add(item.id);
+    items.push({ id: item.id, name, amountMinor: item.amountMinor, category: item.category as string });
+  }
+  const total = items.reduce((sum, item) => sum + item.amountMinor, 0);
+  if (!Number.isSafeInteger(total)) return null;
+  return { incomeMinor, payday, fixed: items, updatedAt };
+}
+function budgetDto(budget: { incomeMinor: number; payday: number; fixed: { id: string; name: string; amountMinor: number; category: string }[]; updatedAt: number }): Dict {
+  return { incomeMinor: budget.incomeMinor, payday: budget.payday, updatedAt: budget.updatedAt,
+    fixed: budget.fixed.map(item => ({ id: item.id, name: item.name, amountMinor: item.amountMinor, category: item.category })) };
 }
 async function ownerOf(req: Request): Promise<string | null> {
   const match = /^Bearer ([A-Za-z0-9_-]{40,})$/.exec(req.headers.get("authorization") ?? "");
@@ -185,6 +214,22 @@ export function createApp(config: Config): (req: Request) => Promise<Response> {
         const deleted = await Expense.findOneAndDelete({ _id: expenseMatch[1], ownerId, version });
         if (deleted) return json({ message: "Expense deleted" });
         return (await Expense.exists({ _id: expenseMatch[1], ownerId })) ? error("conflict", "Expense changed elsewhere. Refresh and try again.", 409) : error("not_found", "Expense not found", 404);
+      }
+      if (path === "/api/budget" && req.method === "GET") {
+        const budget = await Budget.findOne({ ownerId });
+        return json({ budget: budget ? budgetDto(budget) : null });
+      }
+      if (path === "/api/budget" && req.method === "PUT") {
+        const fields = budgetFields(await bodyOf(req));
+        if (!fields) return error("invalid_input", "Check salary, payday and fixed spends", 400);
+        try {
+          const saved = await Budget.findOneAndUpdate({ ownerId, updatedAt: { $lte: fields.updatedAt } }, { $set: fields, $setOnInsert: { ownerId } }, { upsert: true, returnDocument: "after", runValidators: true });
+          return json({ budget: budgetDto(saved) });
+        } catch (cause) {
+          if ((cause as { code?: number }).code !== 11000) throw cause;
+          const current = await Budget.findOne({ ownerId });
+          return json({ error: { code: "conflict", message: "A newer budget is already saved" }, budget: current ? budgetDto(current) : null }, 409);
+        }
       }
       if (path === "/api/summary" && req.method === "GET") {
         const month = url.searchParams.get("month"), today = url.searchParams.get("today");

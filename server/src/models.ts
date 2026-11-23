@@ -37,3 +37,17 @@ const expenseSchema = new Schema({
 expenseSchema.index({ ownerId: 1, clientId: 1 }, { unique: true });
 expenseSchema.index({ ownerId: 1, occurredOn: -1, _id: -1 });
 export const Expense = mongoose.model("Expense", expenseSchema);
+
+const budgetSchema = new Schema({
+  ownerId: { type: Schema.Types.ObjectId, required: true, unique: true },
+  incomeMinor: { type: Number, required: true, min: 1, max: 100_000_000_000 },
+  payday: { type: Number, required: true, min: 1, max: 31 },
+  fixed: [new Schema({
+    id: { type: String, required: true, maxlength: 64 },
+    name: { type: String, required: true, minlength: 1, maxlength: 40 },
+    amountMinor: { type: Number, required: true, min: 1, max: 100_000_000_000 },
+    category: { type: String, enum: CATEGORIES, required: true },
+  }, { _id: false })],
+  updatedAt: { type: Number, required: true },
+});
+export const Budget = mongoose.model("Budget", budgetSchema);

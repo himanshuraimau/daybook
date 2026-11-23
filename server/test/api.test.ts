@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import mongoose from "mongoose";
 import { readConfig } from "../src/config";
-import { Account, Expense, RateLimit, Session } from "../src/models";
+import { Account, Budget, Expense, RateLimit, Session } from "../src/models";
 import { createApp } from "../src/server";
 
 const uri = process.env.MONGODB_URI_TEST;
@@ -131,4 +131,31 @@ test.skipIf(!uri)("Vercel entry point serves the API on the original path and fa
   expect(await health.json()).toEqual({ status: "ok" });
   expect((await vercel.fetch(new Request("http://localhost/api/expenses"))).status).toBe(401);
   process.env.MONGODB_URI = saved;
+});
+
+test.skipIf(!uri)("budget profile: validation, account scope, last write wins, newer copy wins on conflict", async () => {
+  const first = await login("a@example.test", "a very long password");
+  const second = await login("b@example.test", "another long password");
+  expect((await request("/api/budget", "GET", first)).body.budget).toBeNull();
+  expect((await request("/api/budget", "GET")).status).toBe(401);
+  const now = Date.now();
+  const rent = { id: "rent-1", name: "Rent", amountMinor: 1_000_000, category: "Bills" };
+  const good = { incomeMinor: 5_000_000, payday: 27, fixed: [rent], updatedAt: now };
+  for (const bad of [
+    { ...good, incomeMinor: 0 }, { ...good, incomeMinor: 10.5 }, { ...good, payday: 0 }, { ...good, payday: 32 },
+    { ...good, fixed: [{ ...rent, amountMinor: -1 }] }, { ...good, fixed: [{ ...rent, category: "Nope" }] },
+    { ...good, fixed: [{ ...rent, name: "  " }] }, { ...good, fixed: [rent, rent] }, { ...good, updatedAt: now + 3 * 86_400_000 },
+    { ...good, fixed: Array.from({ length: 31 }, (_, i) => ({ ...rent, id: `f${i}` })) },
+  ]) expect((await request("/api/budget", "PUT", first, bad)).status).toBe(400);
+  const saved = await request("/api/budget", "PUT", first, good);
+  expect(saved.status).toBe(200);
+  expect(saved.body.budget).toEqual(good);
+  expect((await request("/api/budget", "GET", second)).body.budget).toBeNull();
+  const newer = { ...good, incomeMinor: 6_000_000, fixed: [], updatedAt: now + 1000 };
+  expect((await request("/api/budget", "PUT", first, newer)).status).toBe(200);
+  const stale = await request("/api/budget", "PUT", first, { ...good, updatedAt: now + 500 });
+  expect(stale.status).toBe(409);
+  expect(stale.body.budget.incomeMinor).toBe(6_000_000);
+  expect((await request("/api/budget", "GET", first)).body.budget).toEqual(newer);
+  expect(await Budget.countDocuments({ ownerId: a })).toBe(1);
 });
