@@ -46,6 +46,8 @@ interface Host {
     fun requestNotificationPermission()
     fun signedIn(session: AccountSession, isNew: Boolean)
     fun signOut()
+    /** Rebuilds the screen so a changed light/dark choice takes effect. */
+    fun recreateForAppearance()
 }
 
 object RankRow {

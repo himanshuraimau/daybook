@@ -51,7 +51,7 @@ The home screen shows **today's total**, **this month's total**, a small **categ
 
 ### 3.5 Settings
 
-Settings contain the reminder switch/time, INR display, account information, and sign-out. If unsynced expenses remain, sign-out must explain that they are still on the device and avoid silently deleting them. Avoid adding settings that have no working behavior.
+Settings contain the budget summary, an **Appearance** choice (System, Light or Dark, stored on the phone), the reminder switch/time, INR display, account information, and sign-out. If unsynced expenses remain, sign-out must explain that they are still on the device and avoid silently deleting them. Avoid adding settings that have no working behavior.
 
 ### 3.6 Sign-up and login
 

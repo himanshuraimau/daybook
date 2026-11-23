@@ -99,7 +99,7 @@ Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", D
 
 ### 4.4 History
 
-Title "History". Cycle switcher: back chevron, "27 Oct – 26 Nov" (calendar month when no payday is set), forward chevron (disabled on the current cycle). Total for the cycle under the switcher. Expenses grouped by date with a day header ("Mon 23 Nov · ₹1,240.50"). Tapping a row opens edit. Empty cycle: "No expenses in this cycle."
+Title "History". Cycle switcher: back chevron, "27 Oct – 26 Nov" (calendar month when no payday is set), forward chevron (disabled on the current cycle). Total for the cycle under the switcher. Expenses grouped by date with a day header ("Mon 23 Nov · ₹1,240.50"). A one-line hint says "Tap an expense to edit or delete it." Tapping a row opens edit, where Delete sits at the top right. Empty cycle: "No expenses in this cycle."
 
 ### 4.5 Insights
 
@@ -125,7 +125,7 @@ A full-width **Save budget** button. Edits made offline are saved on the phone a
 
 ### 4.7 Settings
 
-Title "Settings". Cards: **Budget** (salary, payday, fixed total, tap to edit), **Daily reminder** (switch, time, helper "Around this time every day. Notifications never include amounts."; denied-permission explanation and a link to system settings), **Account** (email, currency INR, sync status with Retry), and a bad-outlined **Sign out** button. Signing out with unsynced entries explains they stay on the phone for that account.
+Title "Settings". Cards: **Budget** (salary, payday, fixed total, tap to edit), **Daily reminder** (switch, time, helper "Around this time every day. Notifications never include amounts."; denied-permission explanation and a link to system settings), **Appearance** (three-way segmented control: System, Light, Dark; applies immediately and is remembered), **Account** (email, currency INR, sync status with Retry), and a bad-outlined **Sign out** button. Signing out with unsynced entries explains they stay on the phone for that account.
 
 ## 5. States and copy
 

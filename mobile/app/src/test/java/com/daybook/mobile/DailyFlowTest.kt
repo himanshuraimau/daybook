@@ -314,6 +314,7 @@ class DailyFlowTest {
         a.findViewById<View>(R.id.nav_history).performClick()
         assertEquals(Fmt.range(cycle, 27), text(a, R.id.history_cycle))
         assertTrue(allText(a.findViewById(R.id.history_list)).contains("Now"))
+        assertTrue(allText(a.findViewById(R.id.history_list)).contains("Tap an expense to edit or delete it"))
         assertFalse(allText(a.findViewById(R.id.history_list)).contains("Last cycle"))
         assertFalse(a.findViewById<View>(R.id.next_cycle).isEnabled)
         a.findViewById<View>(R.id.prev_cycle).performClick()

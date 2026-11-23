@@ -29,6 +29,10 @@ class HistoryScreen(private val h: Host) {
         if (items.isEmpty()) list.addView(TextView(ctx).apply {
             text = "No expenses in this ${if (payday == 1) "month" else "cycle"}."; setTextAppearance(R.style.Text_Body); setTextColor(ctx.getColor(R.color.muted)); gravity = android.view.Gravity.CENTER; setPadding(0, Draw.dp(ctx, 40), 0, 0)
         })
+        if (items.isNotEmpty()) list.addView(TextView(ctx).apply {
+            text = "Tap an expense to edit or delete it."; setTextAppearance(R.style.Text_Label); gravity = android.view.Gravity.CENTER
+            setPadding(0, Draw.dp(ctx, 6), 0, 0)
+        })
         for ((day, entries) in items.groupBy { it.occurredOn }) {
             val date = LocalDate.parse(day)
             val header = LayoutInflater.from(ctx).inflate(R.layout.item_day_header, list, false)

@@ -32,6 +32,15 @@ class SettingsScreen(private val h: Host) {
         }
         v.findViewById<android.view.View>(R.id.settings_budget_card).setOnClickListener { h.showBudget(false) }
 
+        val current = Appearance.mode(ctx)
+        for ((id, mode) in listOf(R.id.theme_system to Appearance.SYSTEM, R.id.theme_light to Appearance.LIGHT, R.id.theme_dark to Appearance.DARK)) {
+            val t = v.findViewById<TextView>(id)
+            val on = mode == current
+            if (on) t.setBackgroundResource(R.drawable.segment_on) else t.background = null
+            t.setTextColor(ctx.getColor(if (on) R.color.bg else R.color.muted)); t.isSelected = on
+            t.setOnClickListener { if (mode != Appearance.mode(ctx)) { Appearance.set(ctx, mode); h.recreateForAppearance() } }
+        }
+
         val toggle = v.findViewById<Switch>(R.id.reminder_switch)
         val time = v.findViewById<TextView>(R.id.reminder_time)
         val help = v.findViewById<TextView>(R.id.reminder_help)

@@ -21,6 +21,7 @@ import com.daybook.mobile.data.ExpenseSync
 import com.daybook.mobile.data.SessionVault
 import com.daybook.mobile.domain.Cycles
 import com.daybook.mobile.reminder.ReminderScheduler
+import com.daybook.mobile.ui.Appearance
 import com.daybook.mobile.ui.AuthScreen
 import com.daybook.mobile.ui.BudgetScreen
 import com.daybook.mobile.ui.EntryScreen
@@ -58,6 +59,9 @@ class MainActivity : ComponentActivity(), Host {
         if (screenName == "settings") showSettings()
     }
 
+    override fun attachBaseContext(newBase: Context) { super.attachBaseContext(Appearance.wrap(newBase)) }
+    override fun recreateForAppearance() = recreate()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -81,11 +85,13 @@ class MainActivity : ComponentActivity(), Host {
         findViewById<View>(R.id.nav_settings).setOnClickListener { showSettings() }
         ReminderScheduler.schedule(this)
         if (session == null) showAuth() else {
-            if (intent.getBooleanExtra("open_add", false)) showEntry() else showHome()
+            val restored = savedInstanceState?.getString("screen")
+            if (intent.getBooleanExtra("open_add", false) && restored == null) showEntry()
+            else when (restored) { "settings" -> showSettings(); "history" -> showHistory(false); "insights" -> showInsights(); else -> showHome() }
             refreshFromServer()
         }
     }
-    override fun onSaveInstanceState(outState: Bundle) { outState.putBoolean("prompt", promptVisible); super.onSaveInstanceState(outState) }
+    override fun onSaveInstanceState(outState: Bundle) { outState.putBoolean("prompt", promptVisible); outState.putString("screen", screenName); super.onSaveInstanceState(outState) }
     override fun onStart() {
         super.onStart()
         if (returningFromBackground && session != null) { returningFromBackground = false; promptVisible = true; showHome(); refreshFromServer() }
