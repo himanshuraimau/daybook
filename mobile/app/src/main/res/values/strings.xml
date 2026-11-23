@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Daybook</string>
+    <string name="welcome_message">Your money, one day at a time.</string>
+    <string name="add_expense">Add expense</string>
+    <string name="reminder_title">Daybook</string>
+    <string name="reminder_text">Any spending to add today?</string>
+</resources>

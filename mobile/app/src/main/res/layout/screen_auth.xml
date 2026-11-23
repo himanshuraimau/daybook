@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="24dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="48dp" android:text="Daybook" android:textColor="@color/ink" android:textSize="36sp" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Know what you spent, one day at a time." android:textColor="@color/muted" android:textSize="18sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="32dp" android:text="EMAIL" android:textColor="@color/muted" android:textSize="14sp" />
+        <EditText android:id="@+id/auth_email" android:layout_width="match_parent" android:layout_height="56dp" android:hint="name@example.com" android:inputType="textEmailAddress" android:autofillHints="emailAddress" android:singleLine="true" android:textSize="16sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="PASSWORD" android:textColor="@color/muted" android:textSize="14sp" />
+        <EditText android:id="@+id/auth_password" android:layout_width="match_parent" android:layout_height="56dp" android:hint="At least 8 characters" android:inputType="textPassword" android:autofillHints="password" android:singleLine="true" android:textSize="16sp" />
+        <TextView android:id="@+id/auth_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:textColor="@color/error" android:textSize="14sp" />
+        <TextView android:id="@+id/auth_submit" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="24dp" android:background="@drawable/action_bg" android:gravity="center" android:text="Log in" android:textColor="@color/on_primary" android:textSize="18sp" android:textStyle="bold" />
+        <TextView android:id="@+id/auth_toggle" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:gravity="center" android:text="Create account" android:textColor="@color/primary" android:textSize="16sp" />
+    </LinearLayout>
+</ScrollView>

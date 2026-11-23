@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+            <TextView android:id="@+id/entry_back" android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:text="‹ Back" android:textColor="@color/primary" android:textSize="16sp" />
+            <TextView android:id="@+id/entry_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Add expense" android:textColor="@color/ink" android:textSize="28sp" android:textStyle="bold" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="AMOUNT (₹)" android:textColor="@color/muted" android:textSize="14sp" />
+            <EditText android:id="@+id/entry_amount" android:layout_width="match_parent" android:layout_height="64dp" android:hint="0.00" android:inputType="numberDecimal" android:importantForAutofill="no" android:singleLine="true" android:textColor="@color/ink" android:textSize="32sp" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="CATEGORY" android:textColor="@color/muted" android:textSize="14sp" />
+            <RadioGroup android:id="@+id/entry_categories" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="DATE" android:textColor="@color/muted" android:textSize="14sp" />
+            <TextView android:id="@+id/entry_date" android:layout_width="match_parent" android:layout_height="56dp" android:gravity="center_vertical" android:textColor="@color/ink" android:textSize="18sp" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="NOTE (OPTIONAL)" android:textColor="@color/muted" android:textSize="14sp" />
+            <EditText android:id="@+id/entry_note" android:layout_width="match_parent" android:layout_height="56dp" android:hint="Add a note" android:inputType="textCapSentences" android:importantForAutofill="no" android:maxLength="240" android:singleLine="true" android:textColor="@color/ink" android:textSize="16sp" />
+            <TextView android:id="@+id/entry_delete" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="24dp" android:gravity="center_vertical" android:text="Delete expense" android:textColor="@color/error" android:textSize="16sp" android:visibility="gone" />
+            <TextView android:id="@+id/entry_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/error" android:textSize="14sp" />
+        </LinearLayout>
+    </ScrollView>
+    <TextView android:id="@+id/entry_save" android:layout_width="match_parent" android:layout_height="56dp" android:layout_margin="20dp" android:background="@drawable/action_bg" android:gravity="center" android:text="Save expense" android:textColor="@color/on_primary" android:textSize="18sp" android:textStyle="bold" />
+</LinearLayout>

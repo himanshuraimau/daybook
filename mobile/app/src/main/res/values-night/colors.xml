@@ -1,0 +1,12 @@
+<resources>
+    <color name="canvas">#121818</color>
+    <color name="ink">#F4F5F1</color>
+    <color name="muted">#BBC6C1</color>
+    <color name="primary">#A7B3FF</color>
+    <color name="on_primary">#121818</color>
+    <color name="on_prompt">#F4F5F1</color>
+    <color name="prompt">#405226</color>
+    <color name="soft">#1D2625</color>
+    <color name="divider">#42504C</color>
+    <color name="error">#F2A99F</color>
+</resources>
