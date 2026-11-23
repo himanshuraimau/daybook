@@ -113,4 +113,22 @@ class BudgetSyncTest {
         val second = store.save(a.ownerId, 5_000_000, 27, emptyList(), now = 4000)
         assertTrue(second.updatedAt > first.updatedAt)
     }
+
+    @Test fun emiFieldsSurviveStorageAndOldProfilesStillLoad() {
+        val emi = FixedSpend("phone", "Phone EMI", 500_000, "Shopping", 12, "2026-11")
+        store.save(a.ownerId, 5_000_000, 27, listOf(rent, emi), now = 1000)
+        val loaded = BudgetStore(RuntimeEnvironment.getApplication()).get(a.ownerId)!!
+        assertEquals(listOf(rent, emi), loaded.fixed)
+        assertTrue(loaded.fixed[1].isEmi); assertFalse(loaded.fixed[0].isEmi)
+        val old = """{"incomeMinor":5000000,"payday":27,"updatedAt":5,"fixed":[{"id":"r","name":"Rent","amountMinor":1000000,"category":"Bills"}]}"""
+        assertEquals(false, BudgetStore.decode(old)!!.fixed.single().isEmi)
+    }
+
+    @Test fun emiProfileIsUploadedWithItsMonthsAndStartCycle() {
+        val api = Fake()
+        val emi = FixedSpend("phone", "Phone EMI", 500_000, "Shopping", 12, "2026-11")
+        store.save(a.ownerId, 5_000_000, 27, listOf(emi), now = 1000)
+        BudgetSync.run(store, a, api)
+        assertEquals(emi, api.server!!.fixed.single())
+    }
 }

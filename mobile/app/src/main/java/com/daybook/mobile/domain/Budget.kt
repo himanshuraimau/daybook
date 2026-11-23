@@ -5,12 +5,30 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
-data class FixedSpend(val id: String, val name: String, val amountMinor: Long, val category: String)
+/**
+ * A monthly commitment set aside every cycle. When [months] and [startKey] are set it is an EMI: it is charged only
+ * in the [months] cycles beginning with the one whose start month is [startKey] ("2026-11").
+ */
+data class FixedSpend(
+    val id: String, val name: String, val amountMinor: Long, val category: String,
+    val months: Int? = null, val startKey: String? = null,
+) {
+    val isEmi: Boolean get() = months != null && startKey != null
+    val totalMinor: Long get() = amountMinor * (months ?: 1)
+    /** 1-based instalment number of [cycle]; at or below 0 before the EMI starts, above [months] once finished. */
+    fun instalmentIn(cycle: Cycle): Int =
+        if (!isEmi) 1 else ChronoUnit.MONTHS.between(YearMonth.parse(startKey), YearMonth.from(cycle.start)).toInt() + 1
+    fun chargedIn(cycle: Cycle): Boolean = !isEmi || instalmentIn(cycle) in 1..months!!
+}
 
 data class BudgetProfile(val incomeMinor: Long, val payday: Int, val fixed: List<FixedSpend>, val updatedAt: Long) {
+    /** Every fixed spend added up, ignoring when an EMI starts or ends. Use [fixedFor] for a particular cycle. */
     val fixedMinor: Long get() = fixed.sumOf { it.amountMinor }
-    /** Salary minus fixed spends; negative when fixed spends exceed the salary. */
+    /** Salary minus all fixed spends; negative when they exceed the salary. Use [spendableFor] for a particular cycle. */
     val spendableMinor: Long get() = incomeMinor - fixedMinor
+    /** Fixed spends and EMI instalments that fall in [cycle]. */
+    fun fixedFor(cycle: Cycle): Long = fixed.filter { it.chargedIn(cycle) }.sumOf { it.amountMinor }
+    fun spendableFor(cycle: Cycle): Long = incomeMinor - fixedFor(cycle)
 }
 
 /** A pay cycle: [start] and [end] are both inclusive local dates. */
@@ -79,11 +97,13 @@ object Insights {
             if (prevSpent <= 0L || elapsed == 0) null else Math.round((spent - prevSpent) * 100.0 / prevSpent).toInt()
         }
         val figures = profile?.let { p ->
-            val left = p.spendableMinor - spent
+            val fixedNow = p.fixedFor(cycle)
+            val spendable = p.incomeMinor - fixedNow
+            val left = spendable - spent
             val daysLeft = if (today.isAfter(cycle.end)) 0 else if (today.isBefore(cycle.start)) cycle.days else (ChronoUnit.DAYS.between(today, cycle.end).toInt() + 1)
             val projectedTotal = if (elapsed == 0) 0L else spent * cycle.days / elapsed
-            val used = if (p.spendableMinor <= 0L) (if (spent > 0) 100 else 0) else Math.min(999L, spent * 100 / p.spendableMinor).toInt()
-            BudgetFigures(p.fixedMinor, p.spendableMinor, left, daysLeft, if (daysLeft > 0 && left > 0) left / daysLeft else 0L, p.spendableMinor - projectedTotal, used)
+            val used = if (spendable <= 0L) (if (spent > 0) 100 else 0) else Math.min(999L, spent * 100 / spendable).toInt()
+            BudgetFigures(fixedNow, spendable, left, daysLeft, if (daysLeft > 0 && left > 0) left / daysLeft else 0L, spendable - projectedTotal, used)
         }
         return CycleSummary(
             cycle = cycle, spentMinor = spent, todayMinor = perDay[today] ?: 0L,

@@ -153,4 +153,63 @@ class BudgetTest {
         assertEquals(listOf(false, false, true, false, true, true, true), week.map { it.second })
         assertFalse(week[1].second)
     }
+
+    private fun emi(months: Int, startKey: String, paise: Long = 500_000) = FixedSpend("emi", "Phone", paise, "Shopping", months, startKey)
+
+    @Test fun emiIsChargedOnlyInItsMonthsStartingFromTheStartCycle() {
+        val e = emi(3, "2026-11")                                       // payday 27: 27 Nov - 26 Dec is instalment 1
+        fun idx(day: String) = e.instalmentIn(Cycles.containing(d(day), 27))
+        assertEquals(0, idx("2026-10-30")); assertFalse(e.chargedIn(Cycles.containing(d("2026-10-30"), 27)))
+        assertEquals(1, idx("2026-11-27")); assertEquals(1, idx("2026-12-26"))
+        assertEquals(2, idx("2026-12-27")); assertEquals(3, idx("2027-02-26"))
+        assertTrue(e.chargedIn(Cycles.containing(d("2027-02-26"), 27)))
+        assertEquals(4, idx("2027-02-27")); assertFalse(e.chargedIn(Cycles.containing(d("2027-02-27"), 27)))
+        assertEquals(1_500_000L, e.totalMinor)
+    }
+
+    @Test fun emiWorksWithCalendarMonthsAndMonthEndPaydays() {
+        val e = emi(12, "2026-11")
+        assertEquals(1, e.instalmentIn(Cycles.containing(d("2026-11-23"), 1)))
+        assertEquals(12, e.instalmentIn(Cycles.containing(d("2027-10-05"), 1)))
+        assertFalse(e.chargedIn(Cycles.containing(d("2027-11-05"), 1)))
+        // payday 31: cycles start on the last day of short months but still advance one month at a time
+        var cycle = Cycles.containing(d("2026-11-30"), 31)
+        val seen = ArrayList<Int>()
+        repeat(14) { seen.add(e.instalmentIn(cycle)); cycle = Cycles.next(cycle, 31) }
+        assertEquals((1..14).toList(), seen)
+    }
+
+    @Test fun emiStartedLaterOrAlreadyPartlyPaid() {
+        val next = emi(6, "2026-12")                                  // starts with the next cycle
+        assertFalse(next.chargedIn(Cycles.containing(d("2026-11-23"), 1)))
+        assertTrue(next.chargedIn(Cycles.containing(d("2026-12-23"), 1)))
+        val partlyPaid = emi(12, "2026-08")                           // four instalments already paid before November
+        assertEquals(4, partlyPaid.instalmentIn(Cycles.containing(d("2026-11-23"), 1)))
+    }
+
+    @Test fun plainFixedSpendsAreAlwaysCharged() {
+        val rent = FixedSpend("r", "Rent", 1_000_000, "Bills")
+        assertFalse(rent.isEmi)
+        assertTrue(rent.chargedIn(Cycles.containing(d("2030-01-01"), 27)))
+    }
+
+    @Test fun spendableRisesWhenAnEmiEnds() {
+        val rent = FixedSpend("r", "Rent", 1_000_000, "Bills")
+        val p = BudgetProfile(5_000_000, 27, listOf(rent, emi(2, "2026-10")), 1L)
+        val oct = Cycles.containing(d("2026-10-30"), 27); val nov = Cycles.containing(d("2026-11-30"), 27); val dec = Cycles.containing(d("2026-12-30"), 27)
+        assertEquals(1_500_000L, p.fixedFor(oct)); assertEquals(3_500_000L, p.spendableFor(oct))
+        assertEquals(1_500_000L, p.fixedFor(nov))
+        assertEquals(1_000_000L, p.fixedFor(dec)); assertEquals(4_000_000L, p.spendableFor(dec))
+        assertEquals(1_500_000L, p.fixedMinor)                         // the plain total ignores schedules
+    }
+
+    @Test fun summaryUsesTheFixedSpendsOfThatCycle() {
+        val p = BudgetProfile(5_000_000, 27, listOf(FixedSpend("r", "Rent", 1_000_000, "Bills"), emi(2, "2026-10")), 1L)
+        val last = Cycles.containing(d("2026-12-30"), 27)               // 27 Dec - 26 Jan: instalment 3 of 2, finished
+        val b = Insights.summarize(listOf(exp("2026-12-28", 100_000)), p, d("2026-12-30"), last).budget!!
+        assertEquals(1_000_000L, b.fixedMinor); assertEquals(4_000_000L, b.spendableMinor); assertEquals(3_900_000L, b.leftMinor)
+        val before = Cycles.previous(last, 27)                          // 27 Nov - 26 Dec: instalment 2 of 2, still charged
+        val b2 = Insights.summarize(emptyList(), p, d("2026-12-10"), before).budget!!
+        assertEquals(1_500_000L, b2.fixedMinor); assertEquals(3_500_000L, b2.leftMinor)
+    }
 }

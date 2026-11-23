@@ -35,12 +35,12 @@ class BudgetStore(context: Context) {
 
     companion object {
         fun encode(p: BudgetProfile): String = JSONObject().put("incomeMinor", p.incomeMinor).put("payday", p.payday).put("updatedAt", p.updatedAt)
-            .put("fixed", JSONArray().also { arr -> p.fixed.forEach { arr.put(JSONObject().put("id", it.id).put("name", it.name).put("amountMinor", it.amountMinor).put("category", it.category)) } }).toString()
+            .put("fixed", JSONArray().also { arr -> p.fixed.forEach { arr.put(JSONObject().put("id", it.id).put("name", it.name).put("amountMinor", it.amountMinor).put("category", it.category).also { o -> if (it.isEmi) o.put("months", it.months).put("startKey", it.startKey) }) } }).toString()
         fun decode(raw: String): BudgetProfile? = try { decode(JSONObject(raw)) } catch (_: Exception) { null }
         fun decode(o: JSONObject): BudgetProfile {
             val arr = o.getJSONArray("fixed")
             return BudgetProfile(o.getLong("incomeMinor"), o.getInt("payday"),
-                (0 until arr.length()).map { arr.getJSONObject(it).let { f -> FixedSpend(f.getString("id"), f.getString("name"), f.getLong("amountMinor"), f.getString("category")) } },
+                (0 until arr.length()).map { arr.getJSONObject(it).let { f -> FixedSpend(f.getString("id"), f.getString("name"), f.getLong("amountMinor"), f.getString("category"), if (f.has("months")) f.getInt("months") else null, if (f.has("startKey")) f.getString("startKey") else null) } },
                 o.getLong("updatedAt"))
         }
     }
