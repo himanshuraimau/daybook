@@ -1,6 +1,6 @@
 # Daybook UI design — "Streak"
 
-**Chosen direction (2026-11-23):** option F, *Streak*. A friendly, habit-first look: deep navy ink, teal and amber, rounded Nunito type, chunky 3D buttons, and a streak card that rewards logging every day. The app's job is unchanged: make daily expense entry quick, then show a clear picture of what is left to spend. Scope for the budget, fixed spends, Insights and streak is in [plan.md](plan.md) §3.7–3.9. Research notes are in [design-research.md](design-research.md); the other options that were considered are in the shared options page and are not part of the build.
+**Chosen direction (2026-11-23):** option F, *Streak*. A friendly, habit-first look: deep navy ink, teal and amber, rounded Nunito type, chunky 3D buttons, and a streak card that rewards logging every day. The app's job is unchanged: make daily expense entry quick, then show a clear picture of what is left to spend. How the budget, fixed spends, EMIs, Insights and streak work is described in the [README](../README.md#how-the-money-works). The other design options that were considered are not part of the build.
 
 Implementation stays on native Android XML Views (no Compose, no UI library). Everything below must work in light and dark, follow the phone's theme setting, and stay usable at 1.3× font size.
 
