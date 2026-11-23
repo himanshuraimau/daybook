@@ -1,183 +1,149 @@
-# Daybook — interface design direction
+# Daybook UI design — "Streak"
 
-**Status:** Chosen first-release direction, 23 November 2026. This document translates the product in [plan.md](plan.md) into a screen and visual specification. The research trail is in [design-research.md](design-research.md). These are Daybook design choices, inspired by agency process and principles; no agency screen, branding, or asset should be copied.
+**Chosen direction (2026-11-23):** option F, *Streak*. A friendly, habit-first look: deep navy ink, teal and amber, rounded Nunito type, chunky 3D buttons, and a streak card that rewards logging every day. The app's job is unchanged: make daily expense entry quick, then show a clear picture of what is left to spend. Scope for the budget, fixed spends, Insights and streak is in [plan.md](plan.md) §3.7–3.9. Research notes are in [design-research.md](design-research.md); the other options that were considered are in the shared options page and are not part of the build.
 
-## 1. Design idea: an editorial expense journal
+Implementation stays on native Android XML Views (no Compose, no UI library). Everything below must work in light and dark, follow the phone's theme setting, and stay usable at 1.3× font size.
 
-Daybook should look like a modern personal logbook: **one clear number, one clear action, then the supporting details**. The feel is confident and crisp, with large typography and a small number of expressive colors. The interface should make adding today's spending feel easy, not like filling out an accounting form.
+## 1. Principles
 
-**Visual keywords:** editorial, calm, precise, human, current.
+1. **One number per screen first.** Home leads with what is left to spend (or today's spending when no budget exists). Everything else supports it.
+2. **Add in a few taps.** The number pad is always on screen; category and date are single taps; note is optional.
+3. **Money is never hidden.** Over-budget shows as "Over by ₹…" in the warning color, never a silent zero.
+4. **Honest state.** Pending, synced and failed expenses are always labelled. The streak counts only what is on the phone.
+5. **Playful, not noisy.** 3D buttons and the streak card carry the personality; the rest is calm cards on a tinted background.
+6. **Accessible.** Touch targets ≥ 48dp, text contrast ≥ 4.5:1 in both themes, state never conveyed by color alone, every icon-only control has a content description.
 
-**What this means on screen:** a large daily amount, short date labels, strong alignment, ample space, a bright but limited accent, and expense rows that read like a dated journal. Category bars describe actual spending; they do not look like progress toward a budget that Daybook has not defined.
+## 2. Design tokens
 
-## 2. Research translated into Daybook
+### Color (light / dark)
 
-| Agency case | Observed design lesson | Daybook application |
-| --- | --- | --- |
-| [350life × Cashews](https://350life.com/work/cashews) | The studio tested alternatives before choosing one meaningful figure for the opening view. | Make **spent today** the focal number, with month total and recent entries nearby to explain it. Do not imply “safe to spend” or predict future money. |
-| [Arounda × Kinves](https://arounda.agency/works/kinves) | Direct access to frequent tasks and a clear primary purpose per screen. | Put **Add expense** within thumb reach and give Home, History, Entry, and Settings distinct jobs. |
-| [Clay × Lulo Bank](https://clay.global/work/lulo-bank) | Straightforward navigation with small visual and motion cues. | Use brief save and sync feedback; keep visual effects secondary to the amount and status. |
-| [Daylight × EarnIn](https://www.daylightdesign.com/projects/earnin) | Visualizations and micro-interactions were explored and tested around money over time. | Start with a simple monthly category bar list. Add a trend chart only if it answers a real question after use. |
-| [Humbleteam × Afternoon](https://humbleteam.com/work/afternoon) | Consistent cards with one job and plain prompts. | The opening reminder card has one message, an Add action, and a dismiss action. |
+| Token | Light | Dark | Use |
+| --- | --- | --- | --- |
+| `bg` | `#F1F7F8` | `#0D2030` | Screen background |
+| `surface` | `#FFFFFF` | `#15324A` | Cards, inputs |
+| `surface2` | `#E3EEF1` | `#1F4563` | Tracks, inactive fills |
+| `ink` | `#16324F` | `#EAF4F8` | Primary text |
+| `muted` | `#5C7285` | `#93AEBE` | Secondary text |
+| `line` | `#CFE0E6` | `#23506F` | Outlines and 3D card edges |
+| `accent` | `#00A896` | `#1FD1BC` | Primary actions, hero card |
+| `accentDark` | `#00776A` | `#0E8F80` | 3D edge of accent surfaces |
+| `onAccent` | `#FFFFFF` | `#06302B` | Text on accent |
+| `amber` | `#FFB703` | `#FFC93D` | Prompts, streak, highlights |
+| `amberDark` | `#D99500` | `#C79200` | 3D edge of amber surfaces |
+| `warn` | `#9C6400` | `#FFC93D` | Pending, caution text |
+| `bad` | `#D6405A` | `#FF7C93` | Failed sync, over budget |
 
-These case studies describe different products. The layout, copy, palette, and components below are original proposals for Daybook.
+Category colors (light / dark): Food `#F2A400`/`#FFC93D`, Bills `#7B6CF6`/`#A397FF`, Shopping `#F0587B`/`#FF86A2`, Transport `#1E9AD6`/`#52BBF0`, Health `#22B073`/`#43D697`, Entertainment `#F57C2A`/`#FF9B55`, Other `#6E8798`/`#9DB5C4`. A category tint is its color at 16–25% over `surface`.
 
-## 3. Visual system
+### Type — Nunito (bundled, not downloaded at runtime)
 
-### Color
+| Style | Size | Weight | Use |
+| --- | --- | --- | --- |
+| Display | 40sp | 800 | Hero and amount entry, tabular figures |
+| Title | 22sp | 800 | Screen titles |
+| Heading | 16sp | 800 | Section headings |
+| Body | 14sp | 600 | Rows, inputs |
+| Label | 12sp | 700 | Captions, chips, status |
+| Overline | 11sp | 800, +8% tracking, uppercase | Field and section labels |
 
-The palette uses warm paper-like neutrals, dark ink, a cobalt action color, and one lime highlight. Cobalt makes the primary action easy to spot; lime is reserved for the daily-entry prompt or a small positive confirmation. No color alone communicates sync or error state.
+Amounts always use tabular figures and Indian digit grouping (₹1,24,000.50).
 
-| Token | Light value | Use |
-| --- | --- | --- |
-| Canvas | `#F5F4EF` | Main screen background. |
-| Ink | `#202726` | Main text and prominent numbers. |
-| Muted ink | `#68716D` | Secondary labels on Canvas. |
-| Primary | `#424DE8` | Add/Save actions, selected tab, focused field. |
-| Primary text | `#FFFFFF` | Text on Primary. |
-| Prompt | `#DDF97C` | Opening prompt surface, used sparingly. |
-| Soft surface | `#ECEBFF` | Month summary or category detail surface. |
-| Divider | `#D9DDD8` | Quiet separation between journal rows. |
-| Error | `#B43E32` | Failed sync and validation alongside text/icons. |
-| Success | `#236D50` | Synced confirmation alongside text/icons. |
+### Shape and depth
 
-For dark mode, start with Canvas `#121818`, surface `#1D2625`, main text `#F4F5F1`, secondary text `#BBC6C1`, and action `#A7B3FF` with dark ink text. Test every component in both modes. The proposed light palette has at least **4.5:1 text contrast** for the listed text/background pairs (for example muted ink on Canvas: 4.57:1; white on Primary: 6.07:1). Recheck contrast after implementation and when any token changes. Android recommends scalable text, sufficient contrast, and at least 48 dp touch targets. [Android accessibility guidance](https://developer.android.com/design/ui/mobile/guides/foundations/accessibility)
+Cards: 20dp radius, 2dp `line` outline, 3dp solid bottom edge in `line` (the "3D" look). Hero and primary buttons: 22dp / 16dp radius with a 5dp bottom edge in `accentDark`. Chips: 14dp radius, 2dp outline, 3dp bottom edge. Pressed state moves the surface down by the edge height and removes the edge (80ms). No blur, no gradients, no shadows other than these solid edges.
 
-### Type and spacing
+Spacing scale: 4, 8, 12, 16, 20, 24dp. Screen side padding 16dp. Card inner padding 12–16dp.
 
-- Use Android's system sans font initially, with strong weight and size differences instead of adding a font asset. Use tabular numerals for aligned amounts where the chosen text rendering supports them.
-- App title: **24 sp, bold**. Hero amount: **48–56 sp, bold**; allow it to shrink or wrap gracefully for large values and font scaling. Section heading: **20 sp, semibold**. Row amount/body: **16–18 sp**. Supporting labels: **14 sp**.
-- Use 20 dp side padding, an 8 dp spacing rhythm, 24–32 dp between major sections, and 16–20 dp internal card padding. Cards can use 20–24 dp corner radius; rows should mostly sit directly on the canvas instead of each becoming a card.
-- Use distinct date and category labels, not icons alone. Avoid tiny all-caps text for essential information.
+### Motion
 
-### Components and motion
+Only meaningful motion: button press (above), a 200ms count-up of the hero amount when it changes, a short pop of the streak flame after saving the day's first expense, bars growing in Insights (300ms). Respect the system "remove animations" setting.
 
-- **Primary action:** filled cobalt **Add expense** button or extended floating action button; only one persistent primary action. The opening prompt may also offer the same action because it is shown temporarily.
-- **Daily prompt card:** lime surface, short question, Add action, and a clearly labeled **Not now** action. It appears once per new app opening and never blocks the screen.
-- **Expense row:** category marker, note or category name, date/time context if useful, right-aligned ₹ amount, and text status when pending or failed. Avoid a different saturated color for every category.
-- **Category breakdown:** horizontal bars with category name, ₹ total, and proportion of actual monthly spend. Label the values so the bars are understandable without color.
-- **Feedback:** brief save confirmation and a small pending-to-synced transition. Avoid celebratory animation for ordinary spending. Respect device reduced-motion preferences where available.
+## 3. Components
 
-Android's navigation guidance supports a bottom bar for three to five top-level destinations and a prominent floating action for the highest-priority task. Daybook uses **Home / History / Settings** plus one Add action. [Android layout and navigation guidance](https://developer.android.com/design/ui/mobile/guides/layout-and-content/layout-and-nav-patterns)
+- **Hero card** — accent fill, `onAccent` text, overline label, Display amount, up to two translucent chips. One per screen.
+- **Streak card** — flame badge, "N days in a row", one-line encouragement, and a seven-day strip: filled teal circle with a check for a logged day, dashed outline for a missed day, today's circle ringed in amber.
+- **Prompt card** — amber tint with amber outline and edge; heading, one line of help, a 3D amber **Add expense** button and a text **Not now**.
+- **Expense row** — category circle (category color tint, icon), note or category as title, "Category · date" caption, amount right-aligned, and a status line: *Pending sync* (warn pill), *Synced* (muted text with a check), *Sync failed · Retry* (bad pill). Failed rows open the retry dialog.
+- **Rank row** — label and amount on one line, a 10dp rounded bar below in the category color on a `surface2` track.
+- **Chip** — icon + label; selected chips use the category color for outline and edge and a tint fill.
+- **Number pad** — 3×4 keys (1–9, `.`, 0, backspace), 3D, 56dp tall. Amount accepts up to 2 decimals and at most ₹10,00,00,000.
+- **Bottom navigation** — four tabs: Home, History, Insights, Settings. The selected tab has an accent pill behind icon and label.
+- **Segmented control** — two or three options for Insights cycle and similar choices; selected segment is a 3D ink pill.
+- **Section header** — Heading on the left, optional muted action ("See all") on the right.
+- **Dialogs** — rounded 24dp cards in `surface`, 3D buttons, destructive action in `bad`.
+- **Empty state** — a small teal illustration (wallet), one sentence, one action.
 
-## 4. Screen layouts and behavior
+## 4. Screens
 
-### 4.1 Home — daily overview
+### 4.1 Sign up / Log in
 
-```text
-DAYBOOK                                      23 NOV
+Teal circle logo with a 3D edge, "Daybook" Title, tagline "Know what you spent, one day at a time." Email and Password fields, one primary button (**Create account** or **Log in**), and a text link to switch. Password rule shown inline ("At least 8 characters"). Server errors appear under the fields in `bad`. There is no verification or reset step.
 
-SPENT TODAY
-₹420                                   [ + Add ]
+### 4.2 Home
 
-┌  Add today's spending?                         ┐
-│  Add expense                         Not now   │  shown once on opening
-└                                                ┘
+Top bar: "Daybook" and an avatar chip. Then, in order:
 
-THIS MONTH                              ₹8,750
+1. **Streak card.**
+2. **Hero card.** With a budget: overline "LEFT TO SPEND · 27 NOV – 26 DEC", Display amount, chips "₹1,040 a day · 12 days left" and "1 pending". Over budget: the amount reads "Over by ₹2,300" and the hero uses `bad` fill with `onBad` text. Without a budget: overline "SPENT TODAY", today's total, chip "This cycle ₹18,430".
+3. **Prompt card** (once per app opening, dismissible).
+4. **Today row** — "Today ₹1,240.50" with the number of entries, only when a budget hero is shown.
+5. **Budget nudge** (only without a budget): "See what's left each day — set your salary" with a 3D button **Set up budget**.
+6. **Where it went** — top three categories as rank rows for the current cycle; "See all" opens Insights.
+7. **Recent** — the latest three expenses.
 
-WHERE IT WENT
-Food           ███████████       ₹3,200
-Transport      █████             ₹1,450
-Other          ███                 ₹900
+A floating **Add expense** 3D button stays above the navigation bar. Empty state: "Add your first expense today."
 
-RECENT                              See all →
-Coffee · Food                           ₹200
-Lunch · Food                            ₹180
-Bus · Transport                          ₹40   Pending sync
+### 4.3 Add / edit expense
 
-Home                 History              Settings
-```
+Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, wrapping, Food preselected). Date chips **Today** / **Yesterday** / calendar picker. Optional note field (240 characters). Number pad. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
 
-The real screen should use proper spacing, not box-drawing borders. The total is the visual anchor. The daily prompt sits high enough to notice without hiding the total. If a user has no expenses yet, show `₹0` and “Add your first expense today” with the same Add action. If offline, keep local totals visible and show a compact “Offline · 2 expenses waiting to sync” status; never silently present pending data as server backed up.
+### 4.4 History
 
-### 4.2 Add / edit expense — focused entry
+Title "History". Cycle switcher: back chevron, "27 Oct – 26 Nov" (calendar month when no payday is set), forward chevron (disabled on the current cycle). Total for the cycle under the switcher. Expenses grouped by date with a day header ("Mon 23 Nov · ₹1,240.50"). Tapping a row opens edit. Empty cycle: "No expenses in this cycle."
 
-```text
-‹ Back                          Add expense
+### 4.5 Insights
 
-AMOUNT
-₹ [ 0 ]                         numeric keyboard
+Title "Insights". Segmented control **This cycle / Last cycle**. Without a budget the budget-dependent items are omitted.
 
-CATEGORY
-[ Food ] [ Transport ] [ Shopping ]
-[ Bills ] [ Health ] [ More ]
+1. **Summary strip** — three cards: *Spent*, *Fixed*, *Left* (Left in `bad` when negative).
+2. **Daily spending** — bar chart, one bar per day of the cycle (bars for days after today are empty), a dashed line for the daily allowance, today's bar in amber. Tapping a bar shows that day's total.
+3. **Pace** — one sentence: "At this pace you'll finish ₹6,400 under budget." or "…₹2,100 over budget." plus a progress bar of cycle elapsed vs budget used.
+4. **Where it went** — all categories as rank rows with percentage of spending.
+5. **Numbers** — a 2×2 grid: *Average a day*, *Biggest spend* (with its note), *No-spend days*, *Vs last cycle* (percent change up to the same day).
 
-DATE                 Today, 23 Nov  ›
-NOTE                 Add a note (optional)
+Every figure has an accessible text equivalent. Empty cycle: "Nothing to analyse yet."
 
-[ Save expense ]                  fixed near bottom
-```
+### 4.6 Budget setup
 
-Focus the amount field. Validate a positive INR amount before save. The date defaults to today but can be changed. Category choices should be large enough to tap and show selection with shape/text as well as color. When offline, save locally and show **“Saved on this phone. Waiting to sync.”** An edit screen uses the same layout with a clear delete action and confirmation/undo. The session that defines offline editing must decide how a pending change behaves before this flow is finalized.
+Reached from the Home nudge, first login (skippable with **Set up later**) and Settings → Budget. One scrolling screen with three cards:
 
-### 4.3 History — dated journal
+1. **Salary** — ₹ amount per month.
+2. **Payday** — stepper (− / +) and a label "Paid on the 27th". Helper text: "Your cycle runs from the 27th to the 26th."
+3. **Fixed spends** — list rows (name, category, amount, delete) and a 3D **Add fixed spend** button opening a dialog with name, amount, category chips. Footer line: "Fixed total ₹10,000 · Spendable ₹40,000" updating live; in `bad` if fixed exceeds salary.
 
-```text
-History                         November 2026  ▾
+A full-width **Save budget** button. Edits made offline are saved on the phone and uploaded later; Settings shows "Budget saved on this phone, waiting to sync" until then.
 
-TODAY · 23 NOV                         ₹420
-  Coffee · Food                        ₹200
-  Lunch · Food                         ₹180
-  Bus · Transport                       ₹40   Pending
+### 4.7 Settings
 
-YESTERDAY · 22 NOV                     ₹760
-  Groceries · Food                     ₹620
-  Auto · Transport                     ₹140
-```
+Title "Settings". Cards: **Budget** (salary, payday, fixed total, tap to edit), **Daily reminder** (switch, time, helper "Around this time every day. Notifications never include amounts."; denied-permission explanation and a link to system settings), **Account** (email, currency INR, sync status with Retry), and a bad-outlined **Sign out** button. Signing out with unsynced entries explains they stay on the phone for that account.
 
-Group entries by local calendar date, newest first. Each row opens editing. Month selection changes the list; do not require a filter screen. A failed sync gets a visible **“Sync failed · Retry”** action. Empty month copy: “No expenses recorded this month.”
+## 5. States and copy
 
-### 4.4 Settings — reminder and account
+- **Offline:** no banner on every screen; the sync status lives on rows and in Settings. Sign-up and login say "Connect to the internet to continue."
+- **Loading:** Home and History render from local data immediately; a thin teal progress line appears under the top bar only while a refresh runs.
+- **Errors:** plain sentence plus action ("Couldn't sync. Your expense is saved here. Retry").
+- **Notification:** title "Daybook", text "Any spending to add today?" — no amounts.
+- **Wording:** "cycle" is used only when a payday is set; otherwise the UI says "this month".
 
-```text
-Settings
+## 6. Light and dark
 
-DAILY REMINDER
-Remind me every day                  [ On ]
-Time                                10:00 PM
+Both themes use the token table. Dark mode keeps the same 3D edges (edges are `line`/`accentDark`, not black). Hero text uses `onAccent`, which flips to deep teal-black in dark mode for contrast. Images and the logo need no separate assets.
 
-ACCOUNT
-Email                          name@example.com
-Currency                              INR (₹)
-Sync status                         All synced
-Sign out
-```
+## 7. Build notes (Android)
 
-Turning the reminder on is the moment to request notification permission. If denied, explain that reminders are off and provide a route to system settings. If there are pending expenses at sign-out, explain their status and preserve account isolation; never silently discard them.
-
-### 4.5 Sign-up and login — short and reassuring
-
-```text
-Daybook
-Know what you spent, one day at a time.
-
-Email
-Password
-[ Create account ]
-Already have an account? Log in
-```
-
-Login swaps the primary action to **Log in** and links to Create account. Keep onboarding to these essentials; do not ask for a budget, bank connection, or category setup before the first expense. Show connection errors plainly. Sign-up logs the user in immediately; there is no email verification or password-reset flow (personal app, decided 2026-11-23).
-
-## 5. Content and state rules
-
-| Moment | First-release wording |
-| --- | --- |
-| Opening prompt | “Add today's spending?” / **Add expense** / **Not now** |
-| No entries | “Nothing recorded today. Add an expense to start your daybook.” |
-| Offline save | “Saved on this phone. Waiting to sync.” |
-| Sync complete | “Synced” |
-| Sync failure | “Couldn't sync. Your expense is saved here.” / **Retry** |
-| Reminder | “Any spending to add today?” |
-
-Use neutral language for spending; avoid scolding, streak pressure, or implying a financial judgment. Use the same terms on every screen: **expense**, **spent today**, **this month**, **pending sync**.
-
-## 6. Build and review notes
-
-- Implement this in the existing Kotlin/XML Views app first. Modernity comes from hierarchy, typography, spacing, color, and responsive states; no Compose migration or large UI dependency is required for the proposal.
-- Verify the Home layout on a small phone and with large font settings; long ₹ values and notes must not collide with actions.
-- Check light/dark colors, contrast, 48 dp touch targets, screen-reader labels, keyboard behavior, and the visible status of offline entries.
-- If the user prefers a different visual personality, keep the same screen hierarchy and change the palette/shape/type tokens before building components.
-
-**Visual choice:** editorial cobalt and lime. A calmer deep-teal and clay variation can be explored later without changing the screen hierarchy.
+- Fonts: bundle Nunito Regular/SemiBold/Bold/ExtraBold in `res/font/` and set `fontFamily` in the theme.
+- Colors in `values/colors.xml` and `values-night/colors.xml`; no hard-coded hex in layouts.
+- 3D surfaces are `layer-list` drawables (edge layer under a face layer), pressed state via a selector.
+- Charts (daily bars) and the streak strip are small custom `View`s drawn with `Canvas`; no charting library.
+- Icons are vector drawables from the set used in the mockups (food, transport, shopping, bills, health, fun, home, history, insights, settings, plus, back, flame, check).
+- Money math, cycle dates, streak and projections live in a pure Kotlin `domain` package with unit tests; screens only format and display.

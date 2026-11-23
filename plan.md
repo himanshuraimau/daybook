@@ -57,6 +57,25 @@ Settings contain the reminder switch/time, INR display, account information, and
 
 The first-run flow offers **Create account** and **Log in** with email and password. Sign-up/login require a connection; after a successful login, the app can save expenses offline for that account. Require a normalized email and a password of at least 8 characters. Sign-up creates the account and signs the user in immediately: there is no email verification, no password reset, and no SMTP dependency (this is a personal app). Provide clear validation; a duplicate email gets a plain "already has an account" message. Persist the signed-in session securely, support logout, and keep local account data separated by account.
 
+### 3.7 Pay cycle, budget, and fixed spends (added 2026-11-23)
+
+The owner is paid on a fixed day (for example the 27th) and wants a spending cap for the period. Settings and Home therefore support a **budget profile**:
+
+- **Salary:** monthly take-home amount in INR, stored as integer paise.
+- **Payday:** a day of the month, 1–31. A cycle starts on the payday and ends the day before the next one (27 Nov – 26 Dec). When a month is shorter than the payday, the cycle starts on that month's last day. Until a payday is set, it is 1, so a cycle is a calendar month.
+- **Fixed spends:** up to 30 named monthly commitments (name, amount, category), such as rent ₹10,000. They are *reserved* at the start of each cycle and are **not** entered as daily expenses, so they are never counted twice.
+- **Spendable** = salary − total fixed spends. **Left to spend** = spendable − expenses logged in the current cycle, including pending ones. **Daily allowance** = left ÷ days remaining in the cycle including today, rounded down to whole paise. A negative result is shown as "Over by ₹…", never hidden.
+- Without a budget, Home still shows today's and the cycle's totals and offers a card to set the salary. Nothing else is blocked.
+- The profile belongs to one account. It is saved on the phone first and uploaded as a single document (last write wins by its `updatedAt` time); it can be edited offline.
+
+### 3.8 Insights (added 2026-11-23)
+
+A fourth tab, **Insights**, for the current or previous cycle. Everything is computed on the phone from the local expense list (pending entries included); the server stores no analytics. It shows: spent / fixed / left; daily spending bars against the daily allowance; category ranking; average per day; biggest single spend; days with no spending; a projection ("at this pace you will finish ₹X under/over"); and a comparison with the previous cycle up to the same day. Without a budget, the allowance and projection are hidden and the rest still works.
+
+### 3.9 Streak (added 2026-11-23)
+
+Home shows the number of consecutive local calendar days with at least one expense, counted back from today (or from yesterday if today has none yet, so the streak is not lost before the day ends), and a seven-day strip of logged days. It is derived from local data only and adds no setting.
+
 ## 4. Data, API, and app behavior
 
 ### Expense record
@@ -89,6 +108,8 @@ Use one `expenses` collection with one document per expense, plus an accounts co
 | Update | `PATCH /api/expenses/:id` | Edit amount, date, category, or note. |
 | Delete | `DELETE /api/expenses/:id` | Remove a mistaken entry. |
 | Summary | `GET /api/summary?month=YYYY-MM&today=YYYY-MM-DD` | Month totals and category totals, plus today's total for the phone's local date. |
+| Read budget | `GET /api/budget` | The account's single budget profile, or `null`. |
+| Save budget | `PUT /api/budget` | Replace the profile; `409` with the stored copy if it is newer than the upload. |
 | Health | `GET /health` | Check that the API is running. |
 
 The API should return consistent error shapes and reject invalid dates, amounts, and access to another account's records. Sign-up and login need password hashing, session/token handling, and basic protection against repeated login attempts. The Android app talks to the internet-reachable API over HTTPS; MongoDB is never accessed directly from the phone. Keep credentials and tokens out of logs. The API base URL will be configured later; no server address is assumed here.
@@ -177,6 +198,28 @@ These numbered components map to the sessions in [sessions.md](sessions.md). A c
 - [ ] Confirm secrets are excluded from Git, database backup/restore works, and a release build can be installed.
 
 **Done when:** the complete daily flow works on the intended phone and the data can be recovered from a backup.
+
+### P9 — Budget API and cycle logic
+
+- [ ] Add the budget profile model and `GET/PUT /api/budget` with validation and last-write-wins by `updatedAt`.
+- [ ] Add pure Kotlin cycle and budget calculations (cycle dates, spendable, left, daily allowance, projection, streak) with unit tests.
+- [ ] Store the profile per account on the phone, upload it when online, and adopt a newer server copy.
+
+**Done when:** cycle boundaries, month-end paydays, over-budget amounts, and account separation are covered by passing tests, and a profile saved offline reaches the server once.
+
+### P10 — Streak redesign of the existing screens
+
+- [ ] Add the Streak design system (colors, Nunito, 3D buttons, light/dark) and redesign Sign-up/Login, Home, Add expense, History, and Settings.
+- [ ] Replace the system keyboard on Add with the number pad and category chips from [design.md](design.md).
+
+**Done when:** every existing flow still passes its tests and each screen is checked in light and dark on a device or emulator.
+
+### P11 — Budget setup, fixed spends, and Insights
+
+- [ ] Build the budget setup and fixed-spends screens, reachable from first login, Home, and Settings.
+- [ ] Show left-to-spend and daily allowance on Home, switch History to cycles, and add the Insights tab and streak.
+
+**Done when:** entering salary, payday, and rent changes Home and Insights correctly, including after an offline edit and restart.
 
 ## 7. After the first release
 

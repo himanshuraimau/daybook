@@ -19,6 +19,9 @@ This checklist turns the components in [plan.md](plan.md#6-delivery-plan) into w
 | 6 | P6 — Dashboard and history | In progress |
 | 7 | P7 — Reminder and settings | In progress |
 | 8 | P8 — Release check | In progress |
+| 9 | P9 — Budget API and cycle logic | Not started |
+| 10 | P10 — Streak redesign | Not started |
+| 11 | P11 — Budget, fixed spends, Insights | Not started |
 
 ## Session 1 — Product decisions and screen sketches (P1)
 
@@ -129,3 +132,34 @@ This checklist turns the components in [plan.md](plan.md#6-delivery-plan) into w
 **Evidence / notes (2026-11-23):** Final `assembleDebug lintDebug assembleRelease` passed (91 tasks, 24 s). The release APK is unsigned; no install or end-to-end phone test is claimed. `git diff --check` and local documentation link checks passed. `git check-ignore` confirmed `.env`, `node_modules`, local SDK properties, and APK/build outputs are excluded; `bun.lock` is present for source control. A test MongoDB dump was restored into a separate empty test database; account and expense counts both matched 1:1, and a sample expense retained `amountMinor=1234` and `occurredOn=2026-11-23`. The temporary restore database was removed. The owner will supply the HTTPS API origin through `DAYBOOK_API_BASE_URL` later; an intended phone remains unavailable, so release acceptance is open.
 
 **Deployment (2026-11-23):** The code is on GitHub (`himanshuraimau/daybook`, branch `main`). A Vercel project `daybook-api` (root directory `server`, Bun runtime) is linked to it. Vercel Authentication covers preview deployments only so the phone app can reach the production URL. `MONGODB_URI` must be added to the project's environment variables (production) before `/health` can report `ok`; until then the API answers 503.
+
+## Session 9 — Budget API and cycle logic (P9)
+
+**Goal:** the numbers behind "how much can I still spend" are correct and tested before any screen uses them.
+
+- [ ] Add the budget profile model and `GET/PUT /api/budget` with validation and last-write-wins by `updatedAt`.
+- [ ] Add pure Kotlin cycle and budget calculations with unit tests (payday 27, payday 31 in short months, payday 1, over budget, streak).
+- [ ] Store the profile per account on the phone, upload it when online, adopt a newer server copy.
+- [ ] **Session complete:** tests cover cycle boundaries, month-end paydays, over-budget amounts, account separation, and offline-then-online upload.
+
+**Evidence / notes:** _not started_
+
+## Session 10 — Streak redesign of the existing screens (P10)
+
+**Goal:** apply the chosen Streak direction to every screen that exists today.
+
+- [ ] Design system: colors (light/dark), Nunito, 3D buttons, cards, nav.
+- [ ] Redesign Sign-up/Login, Home, Add expense (number pad, category chips), History, Settings.
+- [ ] **Session complete:** existing tests pass; every screen checked in light and dark on the emulator.
+
+**Evidence / notes:** _not started_
+
+## Session 11 — Budget, fixed spends, Insights (P11)
+
+**Goal:** let the owner set salary, payday, and fixed spends and see what is left.
+
+- [ ] Budget setup and fixed-spends screens (first login, Home card, Settings).
+- [ ] Left-to-spend and daily allowance on Home; History by cycle; Insights tab; streak.
+- [ ] **Session complete:** salary, payday, and rent change Home and Insights correctly, including after an offline edit and restart.
+
+**Evidence / notes:** _not started_
