@@ -1,41 +1,33 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# Daybook agent guide
 
-## Expo has changed — do not trust your training data
+## Project
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+Daybook is a small personal finance Android app. Its first job is to make daily expense entry easy, then show a clear spending summary. Read [plan.md](plan.md) for product scope, [design.md](design.md) for the proposed UI, and [sessions.md](sessions.md) for the ordered work and completion checks.
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+The chosen stack is native Kotlin Android in `mobile/`, a TypeScript API running on Bun in `server/`, and Mongoose with the user's existing MongoDB server. Currency is INR only; amounts are integer paise. The app needs email/password sign-up and login, offline expense creation with later server sync, and an optional reminder that runs every enabled day. The existing Android starter uses XML Views. Keep that approach for the first release unless a session explicitly changes it. Do not bring back the old Expo/React Native code; this repository was converted from an Expo starter.
 
-## Commands
+## Working rules
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+1. Read the relevant part of `plan.md` and the current session before changing code. Work on the smallest complete behavior that satisfies the session's acceptance check.
+2. Follow project-local skills in `.agents/skills/` when relevant, especially Android architecture, Kotlin code design, Bun, and MongoDB schema design. Skills are guidance; the current product plan and user instructions set the scope.
+3. Keep the Android project as one app module initially. Separate UI, data access, and models in packages without adding frameworks or modules just for structure. Prefer clear Kotlin APIs, lifecycle-aware state, and simple XML screens.
+4. Keep the server inside `server/`. Do not initialize or populate it during planning sessions. When backend work starts, use Bun, TypeScript, Mongoose, environment-based configuration, and a committed lockfile.
+5. Keep money calculations in integer paise. Treat an expense date as a local calendar date; do not let UTC conversion move it to another day. Validate data on both client and server.
+6. Save an offline expense durably before showing success. Show whether it is pending, synced, or failed. Retry uploads safely using a client-generated ID so reconnects cannot duplicate expenses. Keep one account's local data and pending operations separate from another's.
+7. Protect account data: hash passwords, scope queries to the authenticated account, use HTTPS for the mobile API, and keep credentials, database URLs, session tokens, and financial details out of source control and logs. Add appropriate ignore rules before generating build outputs or local secrets.
+8. Keep reminders local to Android. Ask for notification permission in context. Enabled reminders run daily around the chosen local time; do not claim exact-minute delivery. Notification text must not reveal an amount.
+9. Keep the UI minimal: quick entry, readable totals, useful empty/error states, accessible labels and touch targets. Avoid extra finance features until the first release is working.
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
-```
+## Progress and verification
 
-Run lint and typecheck before declaring any task done.
+- `plan.md` is the product contract. `sessions.md` is the execution checklist. After finishing a task, run the relevant build or behavior check, record the result in that session, and then tick its box. Tick a session's completion box only when its acceptance check passes. Keep corresponding plan checkboxes aligned.
+- For documentation-only edits, check links, section mapping, and consistency with the confirmed choices. Do not claim an Android build passed until an Android SDK is available and the build actually runs.
+- If a required external resource is missing, record the concrete blocker and keep other independent session work moving. Do not mark blocked work complete.
+- Do not overwrite the user's MongoDB server or its data. Use a development database for implementation and tests; define backup/restore before release.
+- Before changing a product choice that is still open in `plan.md`, use the stated default if there is one. Record any consequential new decision in the plan.
 
-## Navigation & Routing
+## Useful paths and commands
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
-
-## Building with EAS
-
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
-
-## Rules
-
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- Android starter: `mobile/app/src/main/java/com/daybook/mobile/MainActivity.kt` and `mobile/app/src/main/res/`.
+- Android build, once the SDK is installed: from `mobile/`, run `./gradlew assembleDebug`.
+- Backend commands will be added when `server/` is initialized in its session.
