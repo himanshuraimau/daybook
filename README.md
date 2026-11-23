@@ -117,7 +117,7 @@ Sign-up and login attempts are rate limited (stored in MongoDB so the limit hold
 ## Status and known gaps
 
 - Not yet verified on a physical phone: the Keystore-backed session, real notification delivery, large-text layouts and TalkBack.
-- The budget (including EMIs) is saved on the phone first and uploaded when the API is reachable. Until the deployed API includes `/api/budget` it stays on the phone only.
+- The budget (including EMIs) is saved on the phone first and uploaded when the API is reachable. The deployed API includes `/api/budget`, and an upload from the emulator was confirmed by reading it back from the live server.
 - Editing a synced expense and loading the server copy after a failed sync need a connection.
 - The release APK is unsigned; signing and Play Store distribution are not set up.
 
