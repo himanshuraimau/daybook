@@ -19,9 +19,9 @@ This checklist turns the components in [plan.md](plan.md#6-delivery-plan) into w
 | 6 | P6 — Dashboard and history | In progress |
 | 7 | P7 — Reminder and settings | In progress |
 | 8 | P8 — Release check | In progress |
-| 9 | P9 — Budget API and cycle logic | Not started |
-| 10 | P10 — Streak redesign | Not started |
-| 11 | P11 — Budget, fixed spends, Insights | Not started |
+| 9 | P9 — Budget API and cycle logic | Complete |
+| 10 | P10 — Streak redesign | Complete |
+| 11 | P11 — Budget, fixed spends, Insights | Complete, one check open |
 
 ## Session 1 — Product decisions and screen sketches (P1)
 
@@ -137,29 +137,29 @@ This checklist turns the components in [plan.md](plan.md#6-delivery-plan) into w
 
 **Goal:** the numbers behind "how much can I still spend" are correct and tested before any screen uses them.
 
-- [ ] Add the budget profile model and `GET/PUT /api/budget` with validation and last-write-wins by `updatedAt`.
-- [ ] Add pure Kotlin cycle and budget calculations with unit tests (payday 27, payday 31 in short months, payday 1, over budget, streak).
-- [ ] Store the profile per account on the phone, upload it when online, adopt a newer server copy.
-- [ ] **Session complete:** tests cover cycle boundaries, month-end paydays, over-budget amounts, account separation, and offline-then-online upload.
+- [x] Add the budget profile model and `GET/PUT /api/budget` with validation and last-write-wins by `updatedAt`.
+- [x] Add pure Kotlin cycle and budget calculations with unit tests (payday 27, payday 31 in short months, payday 1, over budget, streak).
+- [x] Store the profile per account on the phone, upload it when online, adopt a newer server copy.
+- [x] **Session complete:** tests cover cycle boundaries, month-end paydays, over-budget amounts, account separation, and offline-then-online upload.
 
-**Evidence / notes:** _not started_
+**Evidence / notes (2026-11-23):** Server: `GET/PUT /api/budget` with validation (salary, payday 1–31, ≤30 fixed spends, categories, duplicate ids, future timestamps) and last-write-wins; `bun test` against an isolated MongoDB passed 7 tests / 131 assertions, including account scope and a 409 that returns the newer stored copy. Android: pure `domain` logic (cycles, left to spend, daily allowance, projection, comparison, streak) has 15 JVM tests covering payday 27, payday 31 in short months, payday 1, contiguity of cycles for six paydays over three years, over-budget and fixed-larger-than-salary cases; 9 more cover the account-scoped budget store and sync with a fake API (offline edit uploads once, newer server copy wins, stale server copy ignored, corrupt data, two accounts). The Vercel deployment does not have `/api/budget` yet because the new commits are not pushed, so a real phone-to-production upload of the budget is not verified; the app treats the missing route as "keep it on the phone".
 
 ## Session 10 — Streak redesign of the existing screens (P10)
 
 **Goal:** apply the chosen Streak direction to every screen that exists today.
 
-- [ ] Design system: colors (light/dark), Nunito, 3D buttons, cards, nav.
-- [ ] Redesign Sign-up/Login, Home, Add expense (number pad, category chips), History, Settings.
-- [ ] **Session complete:** existing tests pass; every screen checked in light and dark on the emulator.
+- [x] Design system: colors (light/dark), Nunito, 3D buttons, cards, nav.
+- [x] Redesign Sign-up/Login, Home, Add expense (number pad, category chips), History, Settings.
+- [x] **Session complete:** existing tests pass; every screen checked in light and dark on the emulator.
 
-**Evidence / notes:** _not started_
+**Evidence / notes (2026-11-23):** Nunito, light/dark colour tokens, 3D card/button/chip drawables, vector icons and text styles are in `res/`. Auth, Home, Add expense (number pad, category and date chips, note), History, Settings and a dialog theme follow [design.md](design.md). Everything ran on the API 36 emulator in light and dark (Home, Add, History, Insights, Settings, Budget, the fixed-spend dialog, Sign-out dialog and Sign-in); screenshots were reviewed one by one. Found and fixed from those views: floating Add button covering the budget nudge, "Entertainment" clipped on narrow chips (now "Fun" on chips, two columns in the dialog), date chips squeezed off Add (moved above the pad), duplicate category in row subtitles, grey system dialogs. Indian digit grouping is now implemented directly because the JVM and Android locale data disagree. `testDebugUnitTest assembleDebug lintDebug assembleRelease` passed three times in a row with the production API address set (58 tests); UI tests now always run with no server, because with an address set they leaked background network threads and failed intermittently. Not verified: a physical phone, large-text (1.3×) layout, TalkBack, and the flame pop animation.
 
 ## Session 11 — Budget, fixed spends, Insights (P11)
 
 **Goal:** let the owner set salary, payday, and fixed spends and see what is left.
 
-- [ ] Budget setup and fixed-spends screens (first login, Home card, Settings).
-- [ ] Left-to-spend and daily allowance on Home; History by cycle; Insights tab; streak.
-- [ ] **Session complete:** salary, payday, and rent change Home and Insights correctly, including after an offline edit and restart.
+- [x] Budget setup and fixed-spends screens (first login, Home card, Settings).
+- [x] Left-to-spend and daily allowance on Home; History by cycle; Insights tab; streak.
+- [x] **Session complete:** salary, payday, and rent change Home and Insights correctly, including after an offline edit and restart.
 
-**Evidence / notes:** _not started_
+**Evidence / notes (2026-11-23):** On the emulator: Settings → Budget, salary ₹50,000, payday 27th and a ₹10,000 Rent fixed spend saved; the budget survived an app restart; Home then showed "Left to spend · 27 Oct – 26 Nov" with ₹39,749.50 left and ₹9,937.37 a day for 4 days (₹40,000 − ₹250.50, ÷ 4, rounded down), later ₹33,579 after more entries, matching my hand calculation. History switched to cycles; Insights showed Spent ₹6,421 / Fixed ₹10,000 / Left ₹33,579, the daily bars with the budget line (₹1,290.32 a day), pace ("₹32,891.04 under budget"), category ranking and the four numbers. 14 UI tests cover budget setup and validation, fixed spends (add, validate, remove), over-budget wording, cycle History, Insights with and without a budget, and the streak. Open: uploading the budget to the production API (see Session 9) and the physical-phone checks listed under Session 10.

@@ -56,7 +56,7 @@ Spacing scale: 4, 8, 12, 16, 20, 24dp. Screen side padding 16dp. Card inner padd
 
 ### Motion
 
-Only meaningful motion: button press (above), a 200ms count-up of the hero amount when it changes, a short pop of the streak flame after saving the day's first expense, bars growing in Insights (300ms). Respect the system "remove animations" setting.
+Only meaningful motion: the button press (above) and a short pop of the streak flame after saving the day's first expense. Both respect the system "remove animations" setting.
 
 ## 3. Components
 
@@ -95,7 +95,7 @@ A floating **Add expense** 3D button stays above the navigation bar. Empty state
 
 ### 4.3 Add / edit expense
 
-Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, wrapping, Food preselected). Date chips **Today** / **Yesterday** / calendar picker. Optional note field (240 characters). Number pad. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
+Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, three to a row, Food preselected; Entertainment reads "Fun" on the chip). The amount and chips scroll; the date chips (**Today** / **Yesterday** / **Pick date**), the optional note field (240 characters) and the number pad stay fixed above the Save button so a whole entry is reachable without scrolling. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
 
 ### 4.4 History
 
@@ -106,7 +106,7 @@ Title "History". Cycle switcher: back chevron, "27 Oct – 26 Nov" (calendar mon
 Title "Insights". Segmented control **This cycle / Last cycle**. Without a budget the budget-dependent items are omitted.
 
 1. **Summary strip** — three cards: *Spent*, *Fixed*, *Left* (Left in `bad` when negative).
-2. **Daily spending** — bar chart, one bar per day of the cycle (bars for days after today are empty), a dashed line for the daily allowance, today's bar in amber. Tapping a bar shows that day's total.
+2. **Daily spending** — bar chart, one bar per day of the cycle (bars for days after today are empty), a dashed line for the budget per day (spendable ÷ days in the cycle), today's bar in amber and days above the line in `bad`. Tapping a bar shows that day's total.
 3. **Pace** — one sentence: "At this pace you'll finish ₹6,400 under budget." or "…₹2,100 over budget." plus a progress bar of cycle elapsed vs budget used.
 4. **Where it went** — all categories as rank rows with percentage of spending.
 5. **Numbers** — a 2×2 grid: *Average a day*, *Biggest spend* (with its note), *No-spend days*, *Vs last cycle* (percent change up to the same day).

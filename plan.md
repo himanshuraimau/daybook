@@ -201,25 +201,25 @@ These numbered components map to the sessions in [sessions.md](sessions.md). A c
 
 ### P9 — Budget API and cycle logic
 
-- [ ] Add the budget profile model and `GET/PUT /api/budget` with validation and last-write-wins by `updatedAt`.
-- [ ] Add pure Kotlin cycle and budget calculations (cycle dates, spendable, left, daily allowance, projection, streak) with unit tests.
-- [ ] Store the profile per account on the phone, upload it when online, and adopt a newer server copy.
+- [x] Add the budget profile model and `GET/PUT /api/budget` with validation and last-write-wins by `updatedAt`.
+- [x] Add pure Kotlin cycle and budget calculations (cycle dates, spendable, left, daily allowance, projection, streak) with unit tests.
+- [x] Store the profile per account on the phone, upload it when online, and adopt a newer server copy.
 
 **Done when:** cycle boundaries, month-end paydays, over-budget amounts, and account separation are covered by passing tests, and a profile saved offline reaches the server once.
 
 ### P10 — Streak redesign of the existing screens
 
-- [ ] Add the Streak design system (colors, Nunito, 3D buttons, light/dark) and redesign Sign-up/Login, Home, Add expense, History, and Settings.
-- [ ] Replace the system keyboard on Add with the number pad and category chips from [design.md](design.md).
+- [x] Add the Streak design system (colors, Nunito, 3D buttons, light/dark) and redesign Sign-up/Login, Home, Add expense, History, and Settings.
+- [x] Replace the system keyboard on Add with the number pad and category chips from [design.md](design.md).
 
 **Done when:** every existing flow still passes its tests and each screen is checked in light and dark on a device or emulator.
 
 ### P11 — Budget setup, fixed spends, and Insights
 
-- [ ] Build the budget setup and fixed-spends screens, reachable from first login, Home, and Settings.
-- [ ] Show left-to-spend and daily allowance on Home, switch History to cycles, and add the Insights tab and streak.
+- [x] Build the budget setup and fixed-spends screens, reachable from first login, Home, and Settings.
+- [x] Show left-to-spend and daily allowance on Home, switch History to cycles, and add the Insights tab and streak.
 
-**Done when:** entering salary, payday, and rent changes Home and Insights correctly, including after an offline edit and restart.
+**Done when:** entering salary, payday, and rent changes Home and Insights correctly, including after an offline edit and restart. *(Checked on the emulator and in JVM tests; the production budget upload is still to be verified after the server is deployed.)*
 
 ## 7. After the first release
 
