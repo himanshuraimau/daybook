@@ -1,26 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DAYBOOK" android:textColor="@color/ink" android:textSize="24sp" android:textStyle="bold" />
-        <TextView android:id="@+id/today_date" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:textColor="@color/muted" android:textSize="14sp" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="SPENT TODAY" android:textColor="@color/muted" android:textSize="14sp" />
-        <TextView android:id="@+id/today_total" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="₹0" android:textColor="@color/ink" android:textSize="52sp" android:textStyle="bold" />
-        <TextView android:id="@+id/home_add" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="12dp" android:background="@drawable/action_bg" android:gravity="center" android:text="+ Add expense" android:textColor="@color/on_primary" android:textSize="18sp" android:textStyle="bold" />
-        <LinearLayout android:id="@+id/open_prompt" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:background="@drawable/prompt_bg" android:orientation="vertical" android:padding="18dp">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Add today's spending?" android:textColor="@color/on_prompt" android:textSize="20sp" android:textStyle="bold" />
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal">
-                <TextView android:id="@+id/prompt_add" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:gravity="center_vertical" android:text="Add expense" android:textColor="@color/on_prompt" android:textSize="16sp" android:textStyle="bold" />
-                <TextView android:id="@+id/prompt_dismiss" android:layout_width="wrap_content" android:layout_height="48dp" android:gravity="center" android:paddingHorizontal="12dp" android:text="Not now" android:textColor="@color/on_prompt" android:textSize="16sp" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent">
+<ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:clipToPadding="false" android:paddingBottom="88dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingTop="8dp" android:paddingBottom="24dp">
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="52dp">
+            <TextView style="@style/Text.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:text="Daybook" android:textSize="24sp" android:accessibilityHeading="true" />
+            <TextView android:id="@+id/home_avatar" style="@style/Text.Heading" android:layout_width="38dp" android:layout_height="38dp" android:layout_alignParentRight="true" android:layout_centerVertical="true" android:gravity="center" android:paddingBottom="3dp" android:background="@drawable/avatar_bg" android:textColor="@color/on_amber" android:text="D" />
+        </RelativeLayout>
+        <LinearLayout android:id="@+id/streak_card" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="vertical" android:background="@drawable/card_3d" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingTop="14dp" android:paddingBottom="20dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_flame">
+                    <ImageView android:id="@+id/streak_flame" android:layout_width="22dp" android:layout_height="22dp" android:layout_gravity="center" android:src="@drawable/ic_flame" android:tint="@color/amber_dark" android:importantForAccessibility="no" />
+                </FrameLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="12dp" android:orientation="vertical">
+                    <TextView android:id="@+id/streak_title" style="@style/Text.Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="18sp" />
+                    <TextView android:id="@+id/streak_sub" style="@style/Text.Label" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/streak_week" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/hero" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:orientation="vertical" android:background="@drawable/card_hero" android:paddingLeft="18dp" android:paddingRight="18dp" android:paddingTop="16dp" android:paddingBottom="24dp">
+            <TextView android:id="@+id/hero_label" style="@style/Text.Overline" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/on_accent" android:alpha="0.85" />
+            <TextView android:id="@+id/hero_amount" style="@style/Text.Display" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/on_accent" android:textSize="42sp" android:textFontWeight="800" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
+                <TextView android:id="@+id/hero_chip1" style="@style/Text.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/chip_on_hero" android:paddingLeft="10dp" android:paddingRight="10dp" android:paddingTop="5dp" android:paddingBottom="5dp" android:textColor="@color/on_accent" android:visibility="gone" />
+                <TextView android:id="@+id/hero_chip2" style="@style/Text.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:background="@drawable/chip_on_hero" android:paddingLeft="10dp" android:paddingRight="10dp" android:paddingTop="5dp" android:paddingBottom="5dp" android:textColor="@color/on_accent" android:visibility="gone" android:minHeight="32dp" android:gravity="center_vertical" />
             </LinearLayout>
         </LinearLayout>
-        <TextView android:id="@+id/sync_banner" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:textColor="@color/error" android:textSize="14sp" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:background="@drawable/soft_bg" android:orientation="vertical" android:padding="20dp">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="THIS MONTH" android:textColor="@color/muted" android:textSize="14sp" />
-            <TextView android:id="@+id/month_total" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="₹0" android:textColor="@color/ink" android:textSize="30sp" android:textStyle="bold" />
+        <LinearLayout android:id="@+id/open_prompt" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:orientation="vertical" android:background="@drawable/card_prompt" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingTop="14dp" android:paddingBottom="20dp">
+            <TextView style="@style/Text.Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Add today's spending?" android:textSize="18sp" />
+            <TextView style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="@color/muted" android:text="It takes under ten seconds." />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:id="@+id/prompt_add" style="@style/Text.Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="150dp" android:paddingLeft="20dp" android:paddingRight="20dp" android:background="@drawable/btn_amber" android:textColor="@color/on_amber" android:text="Add expense" android:clickable="true" android:focusable="true" />
+                <TextView android:id="@+id/prompt_dismiss" style="@style/Text.Heading" android:layout_width="wrap_content" android:layout_height="52dp" android:layout_marginLeft="8dp" android:paddingLeft="14dp" android:paddingRight="14dp" android:gravity="center" android:textColor="@color/muted" android:text="Not now" android:clickable="true" android:focusable="true" />
+            </LinearLayout>
         </LinearLayout>
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="WHERE IT WENT" android:textColor="@color/ink" android:textSize="20sp" android:textStyle="bold" />
-        <LinearLayout android:id="@+id/categories" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="RECENT" android:textColor="@color/ink" android:textSize="20sp" android:textStyle="bold" />
-        <LinearLayout android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        <LinearLayout android:id="@+id/today_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:orientation="horizontal" android:gravity="center_vertical" android:background="@drawable/card_3d" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingTop="12dp" android:paddingBottom="17dp" android:visibility="gone">
+            <TextView android:id="@+id/today_label" style="@style/Text.Heading" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/today_value" style="@style/Text.Heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="20sp" android:fontFeatureSettings="tnum" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/budget_nudge" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:orientation="vertical" android:background="@drawable/card_3d" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingTop="14dp" android:paddingBottom="20dp" android:visibility="gone">
+            <TextView style="@style/Text.Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="See what's left each day" android:textSize="18sp" />
+            <TextView style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="@color/muted" android:text="Add your salary, payday and fixed spends like rent." />
+            <TextView android:id="@+id/nudge_button" style="@style/Text.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/btn_primary" android:textColor="@color/on_accent" android:text="Set up budget" android:clickable="true" android:focusable="true" />
+        </LinearLayout>
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp">
+            <TextView style="@style/Text.Heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Where it went" android:accessibilityHeading="true" />
+            <TextView android:id="@+id/see_all_insights" style="@style/Text.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentRight="true" android:text="See all" android:padding="6dp" android:clickable="true" android:focusable="true" />
+        </RelativeLayout>
+        <LinearLayout android:id="@+id/categories" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="vertical" />
+        <TextView style="@style/Text.Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Recent" android:accessibilityHeading="true" />
+        <LinearLayout android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="vertical" android:background="@drawable/card_3d" android:paddingLeft="14dp" android:paddingRight="14dp" android:paddingTop="4dp" android:paddingBottom="9dp" />
     </LinearLayout>
 </ScrollView>
+<TextView android:id="@+id/home_add" style="@style/Text.Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="14dp" android:minWidth="220dp" android:paddingLeft="28dp" android:paddingRight="28dp" android:background="@drawable/btn_primary" android:textColor="@color/on_accent" android:text="+  Add expense" android:clickable="true" android:focusable="true" />
+</FrameLayout>

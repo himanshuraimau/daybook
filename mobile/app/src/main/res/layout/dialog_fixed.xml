@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+    <TextView style="@style/Text.Title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Add fixed spend" />
+    <EditText android:id="@+id/fixed_name_input" style="@style/Text.Input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:hint="Name, for example Rent" android:inputType="textCapWords" android:maxLength="40" android:contentDescription="Name" />
+    <EditText android:id="@+id/fixed_amount_input" style="@style/Text.Input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:hint="Amount per month in ₹" android:inputType="numberDecimal" android:maxLength="14" android:contentDescription="Amount per month in rupees" />
+    <GridLayout android:id="@+id/fixed_categories" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:columnCount="2" />
+    <TextView android:id="@+id/fixed_error" style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="@color/bad" android:textStyle="bold" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center_vertical|right">
+        <TextView android:id="@+id/fixed_cancel" style="@style/Text.Heading" android:layout_width="wrap_content" android:layout_height="52dp" android:gravity="center" android:paddingLeft="16dp" android:paddingRight="16dp" android:textColor="@color/muted" android:text="Cancel" android:clickable="true" android:focusable="true" />
+        <TextView android:id="@+id/fixed_confirm" style="@style/Text.Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="120dp" android:paddingLeft="20dp" android:paddingRight="20dp" android:background="@drawable/btn_primary" android:textColor="@color/on_accent" android:text="Add" android:clickable="true" android:focusable="true" />
+    </LinearLayout>
+</LinearLayout>
