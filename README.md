@@ -11,6 +11,25 @@ A small personal finance app for Android. Log what you spend in a few taps, even
 
 Everything is INR. Amounts are stored as integer paise. Built for one person, so there is no email verification and no password reset.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" width="200" alt="Home: streak, what is left to spend this cycle, and the opening prompt"><br><sub>Home</sub></td>
+    <td align="center"><img src="docs/screenshots/add-expense.png" width="200" alt="Add expense with a number pad, category and date chips"><br><sub>Add expense</sub></td>
+    <td align="center"><img src="docs/screenshots/insights.png" width="200" alt="Insights: spent, fixed and left, daily bars against the budget line, and a pace forecast"><br><sub>Insights</sub></td>
+    <td align="center"><img src="docs/screenshots/budget.png" width="200" alt="Budget setup with salary, payday, a fixed spend and an EMI"><br><sub>Budget and EMIs</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/history.png" width="200" alt="History grouped by day for the current pay cycle"><br><sub>History</sub></td>
+    <td align="center"><img src="docs/screenshots/settings.png" width="200" alt="Settings with budget summary, appearance choice and reminder"><br><sub>Settings</sub></td>
+    <td align="center"><img src="docs/screenshots/home-dark.png" width="200" alt="Home in dark mode"><br><sub>Home, dark</sub></td>
+    <td align="center"><img src="docs/screenshots/insights-dark.png" width="200" alt="Insights in dark mode"><br><sub>Insights, dark</sub></td>
+  </tr>
+</table>
+
+<sub>Captured from the app on an Android 16 (API 36) emulator with sample data.</sub>
+
 ## Repository layout
 
 | Path | What it is |
