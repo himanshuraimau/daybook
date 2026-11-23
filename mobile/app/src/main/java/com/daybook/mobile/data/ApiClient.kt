@@ -17,8 +17,13 @@ interface ExpenseGateway {
 }
 
 class ApiClient : ExpenseGateway, BudgetGateway {
-    private val origin = BuildConfig.API_BASE_URL.trimEnd('/')
+    private val origin = baseUrl.trimEnd('/')
     override val configured: Boolean get() = origin.startsWith("https://")
+
+    companion object {
+        /** The HTTPS origin the app talks to. Tests set this to "" so they never reach a real server. */
+        @JvmStatic var baseUrl: String = BuildConfig.API_BASE_URL
+    }
 
     private fun call(path: String, method: String = "GET", session: AccountSession? = null, body: JSONObject? = null): JSONObject {
         if (!configured) throw IOException("Set DAYBOOK_API_BASE_URL to your HTTPS server address before building the app")
