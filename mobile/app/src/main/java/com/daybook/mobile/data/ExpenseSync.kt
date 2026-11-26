@@ -72,6 +72,7 @@ class SyncJobService : JobService() {
         stopped = false
         executor.execute {
             val retry = try { ExpenseSync.run(applicationContext) } catch (_: Exception) { true }
+            com.daybook.mobile.AppSignals.dataChanged(applicationContext)
             if (!stopped) jobFinished(params, retry)
         }
         return true

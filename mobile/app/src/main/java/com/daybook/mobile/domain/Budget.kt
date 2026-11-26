@@ -21,14 +21,27 @@ data class FixedSpend(
     fun chargedIn(cycle: Cycle): Boolean = !isEmi || instalmentIn(cycle) in 1..months!!
 }
 
-data class BudgetProfile(val incomeMinor: Long, val payday: Int, val fixed: List<FixedSpend>, val updatedAt: Long) {
+/** A one-off payment received on [date] (a bonus, freelance work). It raises the spendable amount of the cycle that contains the date. */
+data class OneOffIncome(val id: String, val name: String, val amountMinor: Long, val date: String) {
+    fun inCycle(cycle: Cycle): Boolean = LocalDate.parse(date) in cycle
+}
+
+data class BudgetProfile(
+    val incomeMinor: Long, val payday: Int, val fixed: List<FixedSpend>, val updatedAt: Long,
+    /** Amount to keep aside every cycle; it is subtracted from what can be spent. */
+    val savingsMinor: Long = 0L,
+    val incomes: List<OneOffIncome> = emptyList(),
+) {
     /** Every fixed spend added up, ignoring when an EMI starts or ends. Use [fixedFor] for a particular cycle. */
     val fixedMinor: Long get() = fixed.sumOf { it.amountMinor }
-    /** Salary minus all fixed spends; negative when they exceed the salary. Use [spendableFor] for a particular cycle. */
-    val spendableMinor: Long get() = incomeMinor - fixedMinor
+    /** Salary minus all fixed spends and the savings target, ignoring one-off income. Use [spendableFor] for a particular cycle. */
+    val spendableMinor: Long get() = incomeMinor - fixedMinor - savingsMinor
     /** Fixed spends and EMI instalments that fall in [cycle]. */
     fun fixedFor(cycle: Cycle): Long = fixed.filter { it.chargedIn(cycle) }.sumOf { it.amountMinor }
-    fun spendableFor(cycle: Cycle): Long = incomeMinor - fixedFor(cycle)
+    /** One-off income received within [cycle]. */
+    fun extraFor(cycle: Cycle): Long = incomes.filter { it.inCycle(cycle) }.sumOf { it.amountMinor }
+    /** What can be spent in [cycle]: salary and one-off income, less fixed spends, EMIs and the savings target. */
+    fun spendableFor(cycle: Cycle): Long = incomeMinor + extraFor(cycle) - fixedFor(cycle) - savingsMinor
 }
 
 /** A pay cycle: [start] and [end] are both inclusive local dates. */
@@ -81,6 +94,8 @@ data class BudgetFigures(
     /** Spendable minus the spending projected for the whole cycle; positive means under budget. */
     val projectedFinishMinor: Long,
     val usedPercent: Int,
+    val savingsMinor: Long = 0L,
+    val extraIncomeMinor: Long = 0L,
 ) { val over: Boolean get() = leftMinor < 0 }
 
 object Insights {
@@ -98,12 +113,12 @@ object Insights {
         }
         val figures = profile?.let { p ->
             val fixedNow = p.fixedFor(cycle)
-            val spendable = p.incomeMinor - fixedNow
+            val spendable = p.spendableFor(cycle)
             val left = spendable - spent
             val daysLeft = if (today.isAfter(cycle.end)) 0 else if (today.isBefore(cycle.start)) cycle.days else (ChronoUnit.DAYS.between(today, cycle.end).toInt() + 1)
             val projectedTotal = if (elapsed == 0) 0L else spent * cycle.days / elapsed
             val used = if (spendable <= 0L) (if (spent > 0) 100 else 0) else Math.min(999L, spent * 100 / spendable).toInt()
-            BudgetFigures(fixedNow, spendable, left, daysLeft, if (daysLeft > 0 && left > 0) left / daysLeft else 0L, spendable - projectedTotal, used)
+            BudgetFigures(fixedNow, spendable, left, daysLeft, if (daysLeft > 0 && left > 0) left / daysLeft else 0L, spendable - projectedTotal, used, p.savingsMinor, p.extraFor(cycle))
         }
         return CycleSummary(
             cycle = cycle, spentMinor = spent, todayMinor = perDay[today] ?: 0L,

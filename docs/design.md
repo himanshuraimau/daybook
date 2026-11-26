@@ -95,7 +95,7 @@ A floating **Add expense** 3D button stays above the navigation bar. Empty state
 
 ### 4.3 Add / edit expense
 
-Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, three to a row, Food preselected; Entertainment reads "Fun" on the chip). The amount and chips scroll; the date chips (**Today** / **Yesterday** / **Pick date**), the optional note field (240 characters) and the number pad stay fixed above the Save button so a whole entry is reachable without scrolling. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Under the category chips a text link, **Paying in instalments? Set up an EMI**, opens the EMI dialog prefilled with the note, category and typed amount (as the instalment); saving it adds the EMI to the budget instead of saving a one-off expense. Without a budget the link asks for a salary first. It is hidden when editing an existing expense. Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
+Title "Add expense" (or "Edit expense") with a back button. Overline "AMOUNT", Display amount with a blinking caret. Category chips (7, three to a row, Food preselected; Entertainment reads "Fun" on the chip). The amount and chips scroll; the date chips (**Today** / **Yesterday** / **Pick date**), the optional note field (240 characters; its hint asks where the money went, e.g. "chai at the station") and the number pad stay fixed above the Save button so a whole entry is reachable without scrolling. Full-width 3D **Save expense** button. Edit mode adds a **Delete** text button in `bad` with a confirmation dialog. Validation shows inline under the amount ("Enter an amount above ₹0"). Above the category chips, when there is history and the screen is not editing, an overline **QUICK PICKS** and a horizontally scrolling row of up to five 3D chips: "Repeat · Auto ₹150" first, then frequent ones such as "Chai ₹20" (labels longer than 14 characters are cut with an ellipsis). A tap fills amount, category and note without saving. Under the category chips a text link, **Paying in instalments? Set up an EMI**, opens the EMI dialog prefilled with the note, category and typed amount (as the instalment); saving it adds the EMI to the budget instead of saving a one-off expense. Without a budget the link asks for a salary first. It is hidden when editing an existing expense. Saving writes locally first; the confirmation is a toast ("Saved on this phone. Waiting to sync.") and the streak flame pops if it is the day's first entry.
 
 ### 4.4 History
 
@@ -123,11 +123,13 @@ Reached from the Home nudge, first login (skippable with **Set up later**) and S
 
 **EMI dialog.** A scrolling dialog with permanent labels above each field (Name, Monthly instalment, Number of months, Total cost optional), a live line "₹5,000 × 12 months = ₹60,000", a **First instalment** choice (This cycle / Next cycle), "Instalments already paid" (only for This cycle), category chips, and Cancel / Add pinned at the bottom. Entering the total works out the instalment (rounded to the nearest paisa); entering the instalment works out the total. A note explains that the EMI is set aside automatically and is not added as an expense.
 
+4. **Savings target** — an optional ₹ amount kept aside every cycle. **One-off income** — rows (name, date, "+₹10,000", delete) and an **Add income** button that opens a dialog with Name and Amount, dated today. The footer line adds "Saving ₹…" and "Extra income ₹…" when present: "Fixed ₹0 · Saving ₹5,000 · Extra income ₹10,000 · Spendable ₹55,000".
+
 A full-width **Save budget** button. Edits made offline are saved on the phone and uploaded later; Settings shows "Budget saved on this phone, waiting to sync" until then.
 
 ### 4.7 Settings
 
-Title "Settings". Cards: **Budget** (salary, payday, fixed total, tap to edit), **Daily reminder** (switch, time, helper "Around this time every day. Notifications never include amounts."; denied-permission explanation and a link to system settings), **Appearance** (three-way segmented control: System, Light, Dark; applies immediately and is remembered), **Account** (email, currency INR, sync status with Retry), and a bad-outlined **Sign out** button. Signing out with unsynced entries explains they stay on the phone for that account.
+Title "Settings". A **Budget alerts** card has the switch "Warn me about my budget" and helper text; turning it on without notification permission asks for it and leaves the switch off until it is granted. Cards: **Budget** (salary, payday, fixed total, tap to edit), **Daily reminder** (switch, time, helper "Around this time every day. Notifications never include amounts."; denied-permission explanation and a link to system settings), **Appearance** (three-way segmented control: System, Light, Dark; applies immediately and is remembered), **Account** (email, currency INR, sync status with Retry), and a bad-outlined **Sign out** button. Signing out with unsynced entries explains they stay on the phone for that account.
 
 ## 5. States and copy
 
@@ -149,3 +151,8 @@ Both themes use the token table. Dark mode keeps the same 3D edges (edges are `l
 - Charts (daily bars) and the streak strip are small custom `View`s drawn with `Canvas`; no charting library.
 - Icons are vector drawables from the set used in the mockups (food, transport, shopping, bills, health, fun, home, history, insights, settings, plus, back, flame, check).
 - Money math, cycle dates, streak and projections live in a pure Kotlin `domain` package with unit tests; screens only format and display.
+
+
+### Widget and shortcut
+
+A resizable home-screen widget (4×2 by default) on a rounded card: an overline (LEFT TO SPEND / OVER BUDGET / SPENT TODAY / DAYBOOK), a bold amount, a caption ("₹7,144 a day · 4 days left") and a round teal **+** that opens Add expense. Tapping elsewhere opens Home. A static launcher shortcut, **Add expense**, does the same as the + button.

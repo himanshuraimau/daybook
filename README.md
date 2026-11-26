@@ -2,11 +2,13 @@
 
 A small personal finance app for Android. Log what you spend in a few taps, even offline, and always see what is left to spend until your next payday.
 
-- **Fast entry:** an on-screen number pad, category and date chips, an optional note. Works offline and syncs later.
+- **Fast entry:** an on-screen number pad, category and date chips, an optional note saying where the money went, and quick picks that repeat your last expense or one you log often. Works offline and syncs later.
+- **Widget and shortcut:** a home-screen widget shows what is left and the daily allowance, with a + button that opens Add expense; long-pressing the app icon offers the same shortcut.
 - **Pay-cycle budget:** enter your salary, your payday, and fixed monthly spends such as rent. Home shows what is left and how much you can spend per day.
 - **EMIs:** enter an EMI once (instalment, months, total) and it is set aside automatically every cycle until it ends.
+- **Savings target and one-off income:** keep an amount aside every cycle, and add a bonus or freelance payment to the cycle it arrives in.
 - **Insights:** daily spending against your budget, a pace forecast, category breakdown, and a comparison with the last cycle.
-- **Streak and reminder:** a daily streak for logging, and an optional daily reminder that never shows an amount.
+- **Streak, reminder and budget alerts:** a daily streak for logging, an optional daily reminder, and optional alerts when you are ahead of pace, have used most of the budget, or are over it. None of them shows an amount.
 - **Light and dark:** follow the phone or pick one in Settings.
 
 Everything is INR. Amounts are stored as integer paise. Built for one person, so there is no email verification and no password reset.
@@ -47,9 +49,15 @@ Everything is INR. Amounts are stored as integer paise. Built for one person, so
 
 **EMIs.** An EMI is a fixed spend with a number of months (1–120) and a first cycle. It is set aside in each cycle from then until its last instalment, then stops, and what you can spend goes back up. You can enter the total cost or the instalment (the other is calculated), start this cycle or next, or say how many instalments are already paid. An EMI can also be started from Add expense ("Paying in instalments?"), which sets up the EMI instead of saving a one-off expense.
 
-**Left to spend** = salary − fixed spends and EMI instalments in the cycle − expenses logged in the cycle (pending ones included). **Daily allowance** = left ÷ days remaining including today, rounded down to the paisa. Overspending shows as "Over by ₹…", never as zero. Without a budget, Home shows today's and this month's totals and offers to set one up.
+**Savings target.** An amount kept aside every cycle. Like a fixed spend it lowers what you can spend; it is not an expense and is never logged.
+
+**One-off income.** A bonus or freelance payment with a name, an amount and the date it arrived. It raises what you can spend only in the cycle that contains that date; later cycles are unaffected.
+
+**Left to spend** = salary + one-off income in the cycle − fixed spends and EMI instalments in the cycle − savings target − expenses logged in the cycle (pending ones included). **Daily allowance** = left ÷ days remaining including today, rounded down to the paisa. Overspending shows as "Over by ₹…", never as zero. Without a budget, Home shows today's and this month's totals and offers to set one up.
 
 **Insights** (computed on the phone from local data): spent / fixed / left, daily bars against the budget per day, a pace forecast ("at this pace you'll finish ₹X under budget"), category ranking, average per day, biggest spend, no-spend days, and the change versus the previous cycle up to the same day.
+
+**Quick picks.** Add expense offers up to five chips from the last 120 days: *Repeat* (the most recent expense) and then any amount logged at least twice with the same category and note, most frequent first. One tap fills the amount, category and note; nothing is saved until you press Save. They are hidden when editing.
 
 **Streak.** The number of consecutive days with at least one expense, counted back from today (or from yesterday if today has none yet).
 
@@ -60,6 +68,8 @@ Everything is INR. Amounts are stored as integer paise. Built for one person, so
 - **Accounts are separate.** Local data and pending uploads are kept per account; every server query is scoped to the signed-in account.
 - **Privacy.** Passwords are hashed (Argon2id). The session token is encrypted with the Android Keystore. Notifications never contain an amount. Secrets and database URLs stay out of Git and logs.
 - **Reminder.** Local to the phone, off until enabled, runs every day around the chosen time (default 10:00 pm). It is not exact-minute.
+- **Budget alerts.** Local, off until enabled in Settings (which asks for notification permission). They are checked when expenses or the budget change, after each sync, and when the daily reminder fires; there is no separate background schedule. Levels are *ahead of pace* (projected to overspend, from day 7 of the cycle), *used most* (80% or more) and *over*; each is announced at most once per cycle, a higher level replaces a lower one, and tapping one opens Insights.
+- **Widget.** Built from the same local data as Home and refreshed when expenses or the budget change, and about every 30 minutes by the system. It shows "Sign in" when signed out.
 
 ## Getting started
 

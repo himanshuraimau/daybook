@@ -50,6 +50,13 @@ const budgetSchema = new Schema({
     months: { type: Number, min: 1, max: 120 },
     startKey: { type: String, match: /^\d{4}-(0[1-9]|1[0-2])$/ },
   }, { _id: false })],
+  savingsMinor: { type: Number, default: 0, min: 0, max: 100_000_000_000 },
+  incomes: [new Schema({
+    id: { type: String, required: true, maxlength: 64 },
+    name: { type: String, required: true, minlength: 1, maxlength: 40 },
+    amountMinor: { type: Number, required: true, min: 1, max: 100_000_000_000 },
+    date: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/ },
+  }, { _id: false })],
   updatedAt: { type: Number, required: true },
 });
 export const Budget = mongoose.model("Budget", budgetSchema);

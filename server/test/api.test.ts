@@ -149,14 +149,14 @@ test.skipIf(!uri)("budget profile: validation, account scope, last write wins, n
   ]) expect((await request("/api/budget", "PUT", first, bad)).status).toBe(400);
   const saved = await request("/api/budget", "PUT", first, good);
   expect(saved.status).toBe(200);
-  expect(saved.body.budget).toEqual(good);
+  expect(saved.body.budget).toEqual({ ...good, savingsMinor: 0, incomes: [] });
   expect((await request("/api/budget", "GET", second)).body.budget).toBeNull();
   const newer = { ...good, incomeMinor: 6_000_000, fixed: [], updatedAt: now + 1000 };
   expect((await request("/api/budget", "PUT", first, newer)).status).toBe(200);
   const stale = await request("/api/budget", "PUT", first, { ...good, updatedAt: now + 500 });
   expect(stale.status).toBe(409);
   expect(stale.body.budget.incomeMinor).toBe(6_000_000);
-  expect((await request("/api/budget", "GET", first)).body.budget).toEqual(newer);
+  expect((await request("/api/budget", "GET", first)).body.budget).toEqual({ ...newer, savingsMinor: 0, incomes: [] });
   expect(await Budget.countDocuments({ ownerId: a })).toBe(1);
 });
 
@@ -173,4 +173,25 @@ test.skipIf(!uri)("budget EMIs: months and start cycle are validated, stored and
   expect(saved.status).toBe(200);
   expect(saved.body.budget.fixed).toEqual(body.fixed);          // plain fixed spend has no EMI fields, the EMI keeps both
   expect((await request("/api/budget", "GET", token)).body.budget.fixed[1]).toEqual(emi);
+});
+
+test.skipIf(!uri)("budget savings target and one-off income are validated, stored and returned", async () => {
+  const token = await login("b@example.test", "another long password");
+  const base = Date.now() + 20_000;
+  const bonus = { id: "bonus-1", name: "Diwali bonus", amountMinor: 1_000_000, date: "2026-11-20" };
+  const body = { incomeMinor: 5_000_000, payday: 27, fixed: [], savingsMinor: 500_000, incomes: [bonus], updatedAt: base };
+  for (const bad of [
+    { ...body, savingsMinor: -1 }, { ...body, savingsMinor: 1.5 }, { ...body, savingsMinor: "5000" },
+    { ...body, incomes: [{ ...bonus, amountMinor: 0 }] }, { ...body, incomes: [{ ...bonus, date: "2026-02-31" }] }, { ...body, incomes: [{ ...bonus, date: "20 Nov" }] },
+    { ...body, incomes: [{ ...bonus, name: " " }] }, { ...body, incomes: [bonus, bonus] }, { ...body, incomes: "nope" },
+    { ...body, incomes: Array.from({ length: 61 }, (_, i) => ({ ...bonus, id: `i${i}` })) },
+  ]) expect((await request("/api/budget", "PUT", token, { ...bad, updatedAt: base + 1 })).status).toBe(400);
+  const saved = await request("/api/budget", "PUT", token, body);
+  expect(saved.status).toBe(200);
+  expect(saved.body.budget).toEqual(body);
+  expect((await request("/api/budget", "GET", token)).body.budget).toEqual(body);
+  // An older client that knows nothing about these fields still works; they reset to defaults.
+  const legacy = await request("/api/budget", "PUT", token, { incomeMinor: 6_000_000, payday: 1, fixed: [], updatedAt: base + 5 });
+  expect(legacy.status).toBe(200);
+  expect(legacy.body.budget.savingsMinor).toBe(0); expect(legacy.body.budget.incomes).toEqual([]);
 });

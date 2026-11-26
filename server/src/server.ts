@@ -64,8 +64,10 @@ function expenseDto(expense: { id: string; clientId: string; amountMinor: number
     createdAt: expense.createdAt, updatedAt: expense.updatedAt };
 }
 const MAX_FIXED = 30;
+const MAX_INCOMES = 60;
+type IncomeItem = { id: string; name: string; amountMinor: number; date: string };
 type FixedItem = { id: string; name: string; amountMinor: number; category: string; months?: number | null; startKey?: string | null };
-function budgetFields(body: Dict | null): { incomeMinor: number; payday: number; fixed: FixedItem[]; updatedAt: number } | null {
+function budgetFields(body: Dict | null): { incomeMinor: number; payday: number; fixed: FixedItem[]; savingsMinor: number; incomes: IncomeItem[]; updatedAt: number } | null {
   if (!body) return null;
   const { incomeMinor, payday, fixed, updatedAt } = body;
   if (typeof incomeMinor !== "number" || !Number.isSafeInteger(incomeMinor) || incomeMinor < 1 || incomeMinor > 100_000_000_000) return null;
@@ -91,10 +93,27 @@ function budgetFields(body: Dict | null): { incomeMinor: number; payday: number;
   }
   const total = items.reduce((sum, item) => sum + item.amountMinor, 0);
   if (!Number.isSafeInteger(total)) return null;
-  return { incomeMinor, payday, fixed: items, updatedAt };
+  const savingsMinor = body.savingsMinor === undefined || body.savingsMinor === null ? 0 : body.savingsMinor;
+  if (typeof savingsMinor !== "number" || !Number.isSafeInteger(savingsMinor) || savingsMinor < 0 || savingsMinor > 100_000_000_000) return null;
+  const rawIncomes = body.incomes === undefined || body.incomes === null ? [] : body.incomes;
+  if (!Array.isArray(rawIncomes) || rawIncomes.length > MAX_INCOMES) return null;
+  const incomeIds = new Set<string>();
+  const incomes: IncomeItem[] = [];
+  for (const raw of rawIncomes) {
+    if (!raw || typeof raw !== "object") return null;
+    const item = raw as Dict;
+    const name = typeof item.name === "string" ? item.name.trim() : "";
+    if (typeof item.id !== "string" || item.id.length < 1 || item.id.length > 64 || incomeIds.has(item.id)) return null;
+    if (name.length < 1 || name.length > 40 || !date(item.date)) return null;
+    if (typeof item.amountMinor !== "number" || !Number.isSafeInteger(item.amountMinor) || item.amountMinor < 1 || item.amountMinor > 100_000_000_000) return null;
+    incomeIds.add(item.id);
+    incomes.push({ id: item.id, name, amountMinor: item.amountMinor, date: item.date });
+  }
+  return { incomeMinor, payday, fixed: items, savingsMinor, incomes, updatedAt };
 }
-function budgetDto(budget: { incomeMinor: number; payday: number; fixed: FixedItem[]; updatedAt: number }): Dict {
-  return { incomeMinor: budget.incomeMinor, payday: budget.payday, updatedAt: budget.updatedAt,
+function budgetDto(budget: { incomeMinor: number; payday: number; fixed: FixedItem[]; savingsMinor?: number | null; incomes?: IncomeItem[] | null; updatedAt: number }): Dict {
+  return { incomeMinor: budget.incomeMinor, payday: budget.payday, updatedAt: budget.updatedAt, savingsMinor: budget.savingsMinor ?? 0,
+    incomes: (budget.incomes ?? []).map(item => ({ id: item.id, name: item.name, amountMinor: item.amountMinor, date: item.date })),
     fixed: budget.fixed.map(item => ({ id: item.id, name: item.name, amountMinor: item.amountMinor, category: item.category,
       ...(item.months != null && item.startKey ? { months: item.months, startKey: item.startKey } : {}) })) };
 }

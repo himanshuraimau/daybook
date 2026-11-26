@@ -42,8 +42,8 @@ class InsightsScreen(private val h: Host) {
         val b = s.budget
         stat(ctx, strip, "Spent", Fmt.money(s.spentMinor), "${s.elapsedDays} of ${cycle.days} days")
         if (b != null) {
-            stat(ctx, strip, "Fixed", Fmt.money(b.fixedMinor), "Set aside")
-            stat(ctx, strip, if (b.over) "Over by" else "Left", Fmt.money(Math.abs(b.leftMinor)), if (b.over) "Over budget" else "Of ${Fmt.money(b.spendableMinor)}", if (b.over) R.color.bad else null)
+            stat(ctx, strip, "Fixed", Fmt.money(b.fixedMinor), if (b.savingsMinor > 0) "Saving ${Fmt.money(b.savingsMinor)} too" else "Set aside")
+            stat(ctx, strip, if (b.over) "Over by" else "Left", Fmt.money(Math.abs(b.leftMinor)), if (b.over) "Over budget" else "Of ${Fmt.money(b.spendableMinor)}" + (if (b.extraIncomeMinor > 0) " incl. ${Fmt.money(b.extraIncomeMinor)} extra" else ""), if (b.over) R.color.bad else null)
         }
 
         val hasData = s.spentMinor > 0

@@ -20,6 +20,7 @@ import com.daybook.mobile.data.ExpenseStore
 import com.daybook.mobile.data.ExpenseSync
 import com.daybook.mobile.data.SessionVault
 import com.daybook.mobile.domain.Cycles
+import com.daybook.mobile.reminder.BudgetAlertNotifier
 import com.daybook.mobile.reminder.ReminderScheduler
 import com.daybook.mobile.ui.Appearance
 import com.daybook.mobile.ui.AuthScreen
@@ -52,9 +53,10 @@ class MainActivity : ComponentActivity(), Host {
     private var entryReturn = "home"
     private var budgetReturn = "home"
     private var returningFromBackground = false
+    private var permissionForAlerts = false
     private val auth = AuthScreen(this)
     private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) ReminderScheduler.set(this, true)
+        if (granted) { if (permissionForAlerts) BudgetAlertNotifier.set(this, true) else ReminderScheduler.set(this, true) }
         else message("Notifications are off. Enable them in system settings to use reminders.")
         if (screenName == "settings") showSettings()
     }
@@ -87,6 +89,7 @@ class MainActivity : ComponentActivity(), Host {
         if (session == null) showAuth() else {
             val restored = savedInstanceState?.getString("screen")
             if (intent.getBooleanExtra("open_add", false) && restored == null) showEntry()
+            else if (intent.getStringExtra("open_screen") == "insights" && restored == null) showInsights()
             else when (restored) { "settings" -> showSettings(); "history" -> showHistory(false); "insights" -> showInsights(); else -> showHome() }
             refreshFromServer()
         }
@@ -101,6 +104,7 @@ class MainActivity : ComponentActivity(), Host {
         super.onNewIntent(intent)
         setIntent(intent)
         if (intent.getBooleanExtra("open_add", false) && session != null) showEntry()
+        else if (intent.getStringExtra("open_screen") == "insights" && session != null) showInsights()
     }
     private fun handleBack() {
         when (screenName) {
@@ -129,7 +133,7 @@ class MainActivity : ComponentActivity(), Host {
     override fun perform(work: () -> Unit, failure: (String) -> Unit) {
         io.execute { try { work() } catch (error: Exception) { runOnUiThread { failure(error.message ?: "Please try again") } } }
     }
-    override fun requestNotificationPermission() { notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+    override fun requestNotificationPermission(forAlerts: Boolean) { permissionForAlerts = forAlerts; notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
 
     override fun refreshFromServer(months: List<YearMonth>) {
         if (!api.configured || session == null) return
@@ -143,6 +147,7 @@ class MainActivity : ComponentActivity(), Host {
                 return@perform
             }
             ExpenseSync.run(applicationContext, months + Cycles.containing(java.time.LocalDate.now(), budgets.get(account.ownerId)?.payday ?: 1).months())
+            AppSignals.dataChanged(applicationContext)
             runOnUiThread { when (screenName) { "home" -> showHome(); "history" -> showHistory(false); "insights" -> showInsights() } }
         }, { })
     }

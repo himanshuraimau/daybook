@@ -43,7 +43,8 @@ interface Host {
     fun runOnUi(block: () -> Unit)
     fun message(text: String)
     fun today(): LocalDate = LocalDate.now()
-    fun requestNotificationPermission()
+    /** Asks for notification permission; the granted feature is the budget alerts when [forAlerts], otherwise the reminder. */
+    fun requestNotificationPermission(forAlerts: Boolean = false)
     fun signedIn(session: AccountSession, isNew: Boolean)
     fun signOut()
     /** Rebuilds the screen so a changed light/dark choice takes effect. */

@@ -4,11 +4,14 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.TextView
 import com.daybook.mobile.R
 import com.daybook.mobile.data.ExpenseSync
+import com.daybook.mobile.domain.QuickPicks
+import android.widget.LinearLayout
 import com.daybook.mobile.data.ExpenseStore
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -100,6 +103,35 @@ class EntryScreen(private val h: Host) {
         }
         styleDates()
 
+        // Quick picks: repeat the last expense, or one of the amounts you enter most often.
+        if (existing == null) {
+            val picks = QuickPicks.from(h.store.all(owner), today)
+            if (picks.isNotEmpty()) {
+                val row = v.findViewById<LinearLayout>(R.id.entry_picks)
+                v.findViewById<View>(R.id.entry_picks_label).visibility = View.VISIBLE
+                v.findViewById<View>(R.id.entry_picks_scroll).visibility = View.VISIBLE
+                for (pick in picks) {
+                    val title = pick.note.ifBlank { pick.category }.let { if (it.length > 14) it.take(13) + "…" else it }
+                    val chip = TextView(ctx).apply {
+                        text = (if (pick.isRepeatOfLast) "Repeat · " else "") + title + " " + Fmt.money(pick.amountMinor)
+                        setTextAppearance(R.style.Text_Body); textSize = 13f; setTypeface(typeface, android.graphics.Typeface.BOLD)
+                        gravity = android.view.Gravity.CENTER; minHeight = Draw.dp(ctx, 44)
+                        setPadding(Draw.dp(ctx, 14), 0, Draw.dp(ctx, 14), Draw.dp(ctx, 4)); setBackgroundResource(R.drawable.chip_3d)
+                        isClickable = true; isFocusable = true
+                        contentDescription = "Use ${pick.category}, $title, ${Fmt.money(pick.amountMinor)}"
+                        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { rightMargin = Draw.dp(ctx, 6) }
+                        setOnClickListener {
+                            digits.setLength(0); digits.append(BigDecimal.valueOf(pick.amountMinor, 2).stripTrailingZeros().toPlainString())
+                            error.text = ""; showAmount()
+                            chosenCategory = pick.category; styleCategories()
+                            note.setText(pick.note)
+                        }
+                    }
+                    row.addView(chip)
+                }
+            }
+        }
+
         if (existing?.status == "failed") {
             if (existing.serverId == null) error.text = "Couldn't sync. Your expense is saved here. Edit and save, or retry from Home."
             else {
@@ -122,8 +154,8 @@ class EntryScreen(private val h: Host) {
             val profile = h.budgets.get(owner)
             if (profile == null) { h.message("Set your salary first, then add the EMI."); h.showBudget(false); return@setOnClickListener }
             FixedDialog(h).show(true, profile.payday, FixedDialog.Prefill(note.text.toString().trim(), chosenCategory, Fmt.parsePaise(digits.toString()))) { emi ->
-                h.budgets.save(owner, profile.incomeMinor, profile.payday, profile.fixed + emi)
-                ExpenseSync.schedule(ctx)
+                h.budgets.save(owner, profile.copy(fixed = profile.fixed + emi))
+                ExpenseSync.schedule(ctx); com.daybook.mobile.AppSignals.dataChanged(ctx)
                 h.message("EMI added. It is set aside every cycle, so you don't need to log it.")
                 h.refreshFromServer(); h.showHome()
             }
@@ -142,11 +174,11 @@ class EntryScreen(private val h: Host) {
                 h.store.add(owner, minor, chosenCategory, date, noteValue)
                 h.flamePop = firstToday
                 h.message("Saved on this phone. Waiting to sync.")
-                ExpenseSync.schedule(ctx); h.showHome(); h.refreshFromServer(listOf(YearMonth.from(chosenDate), YearMonth.now()))
+                ExpenseSync.schedule(ctx); com.daybook.mobile.AppSignals.dataChanged(ctx); h.showHome(); h.refreshFromServer(listOf(YearMonth.from(chosenDate), YearMonth.now()))
             } else if (latest != null && latest.status != "synced") {
                 if (h.store.changePending(owner, latest.clientId, minor, chosenCategory, date, noteValue)) {
                     h.message("Saved on this phone. Waiting to sync.")
-                    ExpenseSync.schedule(ctx); h.returnFromEntry()
+                    ExpenseSync.schedule(ctx); com.daybook.mobile.AppSignals.dataChanged(ctx); h.returnFromEntry()
                 } else error.text = "This expense changed. Reopen it and try again."
             } else {
                 save.isEnabled = false

@@ -5,4 +5,11 @@
     <string name="add_expense">Add expense</string>
     <string name="reminder_title">Daybook</string>
     <string name="reminder_text">Any spending to add today?</string>
+    <string name="widget_description">What is left to spend, with a quick add button</string>
+    <string name="shortcut_add_short">Add expense</string>
+    <string name="shortcut_add_long">Add an expense</string>
+    <string name="alert_title">Daybook</string>
+    <string name="alert_ahead">You\'re spending faster than this cycle\'s budget allows.</string>
+    <string name="alert_nearly">You\'ve used most of this cycle\'s budget.</string>
+    <string name="alert_over">You\'re over this cycle\'s budget.</string>
 </resources>

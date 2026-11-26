@@ -3,6 +3,7 @@ package com.daybook.mobile.data
 import android.content.Context
 import com.daybook.mobile.domain.BudgetProfile
 import com.daybook.mobile.domain.FixedSpend
+import com.daybook.mobile.domain.OneOffIncome
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -23,8 +24,12 @@ class BudgetStore(context: Context) {
     fun dirty(ownerId: String): Boolean = prefs.getBoolean("dirty_$ownerId", false)
 
     /** Saves a local edit stamped with the current time and queues it for upload. */
-    fun save(ownerId: String, incomeMinor: Long, payday: Int, fixed: List<FixedSpend>, now: Long = System.currentTimeMillis()): BudgetProfile {
-        val profile = BudgetProfile(incomeMinor, payday, fixed, maxOf(now, (get(ownerId)?.updatedAt ?: 0L) + 1))
+    fun save(ownerId: String, incomeMinor: Long, payday: Int, fixed: List<FixedSpend>, savingsMinor: Long = 0L, incomes: List<OneOffIncome> = emptyList(), now: Long = System.currentTimeMillis()): BudgetProfile =
+        save(ownerId, BudgetProfile(incomeMinor, payday, fixed, 0L, savingsMinor, incomes), now)
+
+    /** Saves [edited] (its own updatedAt is replaced) and queues it for upload. */
+    fun save(ownerId: String, edited: BudgetProfile, now: Long = System.currentTimeMillis()): BudgetProfile {
+        val profile = edited.copy(updatedAt = maxOf(now, (get(ownerId)?.updatedAt ?: 0L) + 1))
         prefs.edit().putString("profile_$ownerId", encode(profile)).putBoolean("dirty_$ownerId", true).apply()
         return profile
     }
@@ -34,14 +39,16 @@ class BudgetStore(context: Context) {
     }
 
     companion object {
-        fun encode(p: BudgetProfile): String = JSONObject().put("incomeMinor", p.incomeMinor).put("payday", p.payday).put("updatedAt", p.updatedAt)
+        fun encode(p: BudgetProfile): String = JSONObject().put("incomeMinor", p.incomeMinor).put("payday", p.payday).put("updatedAt", p.updatedAt).put("savingsMinor", p.savingsMinor)
+            .put("incomes", JSONArray().also { arr -> p.incomes.forEach { arr.put(JSONObject().put("id", it.id).put("name", it.name).put("amountMinor", it.amountMinor).put("date", it.date)) } })
             .put("fixed", JSONArray().also { arr -> p.fixed.forEach { arr.put(JSONObject().put("id", it.id).put("name", it.name).put("amountMinor", it.amountMinor).put("category", it.category).also { o -> if (it.isEmi) o.put("months", it.months).put("startKey", it.startKey) }) } }).toString()
         fun decode(raw: String): BudgetProfile? = try { decode(JSONObject(raw)) } catch (_: Exception) { null }
         fun decode(o: JSONObject): BudgetProfile {
             val arr = o.getJSONArray("fixed")
             return BudgetProfile(o.getLong("incomeMinor"), o.getInt("payday"),
                 (0 until arr.length()).map { arr.getJSONObject(it).let { f -> FixedSpend(f.getString("id"), f.getString("name"), f.getLong("amountMinor"), f.getString("category"), if (f.has("months")) f.getInt("months") else null, if (f.has("startKey")) f.getString("startKey") else null) } },
-                o.getLong("updatedAt"))
+                o.getLong("updatedAt"), o.optLong("savingsMinor", 0L),
+                o.optJSONArray("incomes")?.let { a -> (0 until a.length()).map { a.getJSONObject(it).let { i -> OneOffIncome(i.getString("id"), i.getString("name"), i.getLong("amountMinor"), i.getString("date")) } } } ?: emptyList())
         }
     }
 }

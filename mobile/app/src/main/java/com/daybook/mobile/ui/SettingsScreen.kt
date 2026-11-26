@@ -11,6 +11,7 @@ import android.widget.Switch
 import android.widget.TextView
 import com.daybook.mobile.R
 import com.daybook.mobile.data.ExpenseSync
+import com.daybook.mobile.reminder.BudgetAlertNotifier
 import com.daybook.mobile.reminder.ReminderScheduler
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -29,7 +30,7 @@ class SettingsScreen(private val h: Host) {
         else {
             title.text = "Salary ${Fmt.money(profile.incomeMinor)} · paid on the ${Fmt.ordinal(profile.payday)}"
             val cycleNow = com.daybook.mobile.domain.Cycles.containing(h.today(), profile.payday)
-            sub.text = "Fixed ${Fmt.money(profile.fixedFor(cycleNow))} · Spendable ${Fmt.money(profile.spendableFor(cycleNow))}" + if (h.budgets.dirty(owner)) "\nSaved on this phone, waiting to sync" else ""
+            sub.text = "Fixed ${Fmt.money(profile.fixedFor(cycleNow))}" + (if (profile.savingsMinor > 0) " · Saving ${Fmt.money(profile.savingsMinor)}" else "") + " · Spendable ${Fmt.money(profile.spendableFor(cycleNow))}" + if (h.budgets.dirty(owner)) "\nSaved on this phone, waiting to sync" else ""
         }
         v.findViewById<android.view.View>(R.id.settings_budget_card).setOnClickListener { h.showBudget(false) }
 
@@ -40,6 +41,14 @@ class SettingsScreen(private val h: Host) {
             if (on) t.setBackgroundResource(R.drawable.segment_on) else t.background = null
             t.setTextColor(ctx.getColor(if (on) R.color.bg else R.color.muted)); t.isSelected = on
             t.setOnClickListener { if (mode != Appearance.mode(ctx)) { Appearance.set(ctx, mode); h.recreateForAppearance() } }
+        }
+
+        val alerts = v.findViewById<Switch>(R.id.alerts_switch)
+        alerts.isChecked = BudgetAlertNotifier.enabled(ctx)
+        alerts.setOnCheckedChangeListener { _, checked ->
+            if (checked && Build.VERSION.SDK_INT >= 33 && ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                alerts.isChecked = false; h.requestNotificationPermission(true)
+            } else { BudgetAlertNotifier.set(ctx, checked); if (checked) com.daybook.mobile.AppSignals.dataChanged(ctx) }
         }
 
         val toggle = v.findViewById<Switch>(R.id.reminder_switch)
